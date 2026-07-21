@@ -1,0 +1,7 @@
+A/
+B/
+results/
+.colorsort-lang
+__pycache__/
+*.pyc
+.pytest_cache/
