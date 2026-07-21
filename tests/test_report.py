@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 from colorsort.config import DEFAULT_CONFIG
+from colorsort.messages import render
 from colorsort.models import CopyItem, Decision, FileResult, Measurements, Msg
 from colorsort.report import summarize, write_copy_log, write_results_csv, write_run_json
 
@@ -53,6 +54,47 @@ def test_csv_has_one_row_per_file_with_evidence(tmp_path):
     assert rows[2]["판정"] == "ABSTAIN"
     assert "파일 크기" in rows[2]["경고"]
     assert rows[2]["사본경로"] == "", "복사 계획에 없는 파일은 사본 경로가 비어야 한다"
+
+
+def test_every_csv_column_holds_the_value_it_names(tmp_path):
+    """14개 열 전부를 이름으로 짚어 값을 확인한다.
+
+    이 CSV는 196장의 판정을 나중에 감사할 수 있는 유일한 산출물이므로, 열 순서가
+    CSV_COLUMNS와 어긋나면 조용히 틀린 기록이 남는다. 이웃한 두 열이 뒤바뀌어도
+    잡히도록 GREEN 행을 쓴다 — 이 행은 이웃한 모든 열의 값이 서로 다른 유일한 행이다.
+    (BLUE 행은 초록픽셀수와 중간색픽셀수가 둘 다 0이고, ABSTAIN 행은 0이 셋 연속이라
+    자리바꿈을 놓친다. 행을 바꾸려면 이 성질을 먼저 확인할 것.)
+    """
+    out = tmp_path / "results.csv"
+    results = _results()
+    green = results[1]
+    items = [CopyItem(Path("/in/a/2.png"), Path("/out/green/a__2.png"), "GREEN")]
+    write_results_csv(results, items, out, "ko")
+
+    with out.open(encoding="utf-8-sig", newline="") as fh:
+        rows = list(csv.DictReader(fh))
+
+    expected = {
+        "원본경로": "/in/a/2.png",
+        "사본경로": "/out/green/a__2.png",
+        "판정": "GREEN",
+        "사유": render(green.decision.reason, "ko"),
+        "신뢰도": "높음",
+        "밝은픽셀수": "100",
+        "파랑픽셀수": "0",
+        "초록픽셀수": "100",
+        "중간색픽셀수": "0",
+        "파랑비율": "0.0000",      # n_blue 0 / (0 + n_green 100), :.4f 형식
+        "최대밝기": "17",
+        "사용된게이트": "5",
+        "파일크기": "1000",
+        "경고": "",
+    }
+    assert set(rows[1]) == set(expected), "열이 추가·삭제되면 이 테스트도 함께 고칠 것"
+    for header, value in expected.items():
+        assert rows[1][header] == value, f"{header} 열의 값이 다르다"
+
+    assert rows[2]["사용된게이트"] == "", "게이트를 못 잡은 행은 빈칸이어야 한다"
 
 
 def test_csv_headers_and_reasons_follow_the_language(tmp_path):

@@ -78,6 +78,21 @@ def test_gate_relaxes_when_signal_is_dim():
     assert m.n_green == 100
 
 
+def test_gate_falls_all_the_way_to_the_bottom_rung():
+    """최댓값 1인 사진. 게이트 5도 2도 0개를 잡으므로 마지막 게이트 1까지 내려간다.
+
+    intensity = max(G,B) = 1 이므로 intensity >= 5 는 0개, intensity >= 2 도 0개다.
+    둘 다 n_min=30 에 못 미쳐 게이트 1(100개)이 선택된다.
+    """
+    a = _solid((0, 1, 0), size=(10, 10))
+    m = measure(_load(a), DEFAULT_CONFIG)
+    assert m.peak == 1
+    assert m.gate_used == 1
+    assert m.is_low_confidence is True
+    assert m.n_gated == 100
+    assert m.n_green == 100
+
+
 def test_no_gate_reached_when_too_few_lit_pixels():
     """밝은 픽셀이 30개 미만이면 어떤 게이트로도 판정하지 않는다."""
     a = np.zeros((10, 10, 3), dtype=np.int32)
@@ -93,6 +108,15 @@ def test_completely_black_image():
     assert m.gate_used is None
     assert m.n_lit_1 == 0
     assert m.peak == 0
+
+
+def test_empty_array_from_failed_load_does_not_raise():
+    """읽기에 실패한 파일은 (0,0,3) 빈 배열로 온다. 파이프라인은 load_error를 보기 전에
+    measure를 먼저 부르므로, 여기서 죽으면 실행 전체가 첫 손상 파일에서 멈춘다.
+    """
+    m = measure(_load(np.zeros((0, 0, 3), dtype=np.int32)), DEFAULT_CONFIG)
+    assert m.n_pixels == 0
+    assert m.gate_used is None
 
 
 def test_red_channel_is_recorded():
