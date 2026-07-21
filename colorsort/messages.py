@@ -96,7 +96,8 @@ CATALOG: dict[str, dict[str, str]] = {
 
         # --- CSV 열 이름 ---
         "col.source": "원본경로",
-        "col.dest": "사본경로",
+        # 이 표는 복사 전에 쓰인다. '사본경로'는 아직 없는 사본을 있다고 말한다.
+        "col.dest": "목적지경로",
         "col.label": "판정",
         "col.reason": "사유",
         "col.confidence": "신뢰도",
@@ -196,7 +197,7 @@ CATALOG: dict[str, dict[str, str]] = {
 
         # --- CSV columns ---
         "col.source": "source_path",
-        "col.dest": "copy_path",
+        "col.dest": "destination_path",
         "col.label": "verdict",
         "col.reason": "reason",
         "col.confidence": "confidence",

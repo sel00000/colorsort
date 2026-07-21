@@ -49,11 +49,11 @@ def test_csv_has_one_row_per_file_with_evidence(tmp_path):
     assert rows[0]["판정"] == "BLUE"
     assert "파랑" in rows[0]["사유"]
     assert rows[0]["파랑픽셀수"] == "100"
-    assert rows[0]["사본경로"] == str(Path("/out/blue/a__1.png"))
+    assert rows[0]["목적지경로"] == str(Path("/out/blue/a__1.png"))
     assert rows[1]["판정"] == "GREEN"
     assert rows[2]["판정"] == "ABSTAIN"
     assert "파일 크기" in rows[2]["경고"]
-    assert rows[2]["사본경로"] == "", "복사 계획에 없는 파일은 사본 경로가 비어야 한다"
+    assert rows[2]["목적지경로"] == "", "복사 계획에 없는 파일은 목적지 경로가 비어야 한다"
 
 
 def test_every_csv_column_holds_the_value_it_names(tmp_path):
@@ -76,7 +76,7 @@ def test_every_csv_column_holds_the_value_it_names(tmp_path):
 
     expected = {
         "원본경로": str(Path("/in/a/2.png")),
-        "사본경로": str(Path("/out/green/a__2.png")),
+        "목적지경로": str(Path("/out/green/a__2.png")),
         "판정": "GREEN",
         "사유": render(green.decision.reason, "ko"),
         "신뢰도": "높음",

@@ -15,6 +15,18 @@ def test_default_thresholds_are_the_verified_values():
     assert c.consistency_max == 0.10
 
 
+def test_strictest_gate_matches_the_value_hardcoded_in_is_low_confidence():
+    """models.py 의 Measurements.is_low_confidence 가 이 값을 상수 5로 박아 두고 있다.
+
+    Measurements 는 Config 를 들고 있지 않아 gates 를 참조할 방법이 없다. 그래서
+    gates 를 (8, 4, 1) 로 바꾸면 가장 엄격한 게이트로 통과한 파일까지 전부 '신뢰도
+    낮음'으로 표시되는데, 판정 자체는 멀쩡하므로 눈에 띄지 않는다.
+
+    gates[0] 을 바꾸려면 models.py 의 is_low_confidence 도 함께 고칠 것.
+    """
+    assert DEFAULT_CONFIG.gates[0] == 5
+
+
 def test_config_is_immutable():
     import dataclasses
     import pytest

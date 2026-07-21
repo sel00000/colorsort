@@ -49,7 +49,12 @@ def write_results_csv(results: list[FileResult], items: list[CopyItem], path: Pa
 
 
 def write_copy_log(items: list[CopyItem], path: Path) -> None:
-    """되돌리기용 기록. 어떤 원본이 어디로 복사됐는지 전부 남긴다."""
+    """되돌리기용 기록. 이번 실행에서 실제로 만들어진 사본만 남긴다.
+
+    실행할 때마다 새로 쓰므로 누적 이력이 아니다. 하지 않은 복사가 적혀 있으면 그것을
+    보고 되돌리는 사용자가 이 도구가 만들지도 않은 자기 파일을 지우게 되므로,
+    호출하는 쪽에서 성공한 항목만 넘긴다.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding=_ENCODING, newline="") as fh:
         writer = csv.DictWriter(fh, fieldnames=["원본경로", "사본경로", "판정"])
