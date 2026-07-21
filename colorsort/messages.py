@@ -75,6 +75,7 @@ CATALOG: dict[str, dict[str, str]] = {
         "error.no_png": "오류: {path} 안에서 PNG 파일을 찾지 못했습니다.",
         "error.collision": "오류: 사본 이름이 겹칩니다. 덮어쓰지 않기 위해 중단합니다.",
         "error.collision_row": "  {dest} <- 원본 {n}개",
+        "error.write_failed": "오류: 결과를 저장할 수 없습니다: {path} ({error})",
         "error.copy_exists": "이미 존재하여 건너뜀: {dest}",
         "error.copy_failed": "복사 실패 {source} -> {dest}: {error}",
 
@@ -174,6 +175,7 @@ CATALOG: dict[str, dict[str, str]] = {
         "error.no_png": "Error: no PNG files found in {path}.",
         "error.collision": "Error: copy names collide. Stopping so nothing is overwritten.",
         "error.collision_row": "  {dest} <- {n} source file(s)",
+        "error.write_failed": "Error: could not write the results: {path} ({error})",
         "error.copy_exists": "Already exists, skipped: {dest}",
         "error.copy_failed": "Copy failed {source} -> {dest}: {error}",
 

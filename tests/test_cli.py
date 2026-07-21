@@ -296,6 +296,60 @@ def test_a_hard_copy_failure_shows_up_in_the_exit_code(tmp_path, capsys):
         f"한 장도 복사하지 못했는데 복사했다고 말한다: {captured.out}")
 
 
+def test_unwritable_output_folder_reports_a_sentence_not_a_traceback(tmp_path, capsys):
+    """결과를 쓸 수 없으면 파이썬 추적 대신 문장을 보여준다.
+
+    --output 이 보호된 폴더나 동기화 폴더를 가리키는 일은 Windows 에서 충분히 일어난다.
+    그때 나오던 PermissionError 추적은 이 도구를 쓸 사람에게 읽을 수도 없고 무엇을
+    해야 할지도 알려주지 않는 출력이었다.
+
+    출력 폴더가 놓일 자리에 같은 이름의 '파일'을 두어 mkdir 이 OSError 를 내게 한다.
+    권한 비트와 달리 관리자로 실행해도, 어느 운영체제에서도 똑같이 막힌다.
+    """
+    src = tmp_path / "in"
+    _write_png(src / "b.png", (0, 0, 17))
+
+    for lang, needle in (("ko", "저장할 수 없습니다"),
+                         ("en", "could not write the results")):
+        blocked = tmp_path / f"out-{lang}"
+        blocked.write_text("출력 폴더 자리를 막고 있는 파일", encoding="utf-8")
+
+        code = main([str(src), "--output", str(blocked), "--lang", lang])
+        captured = capsys.readouterr()
+
+        assert code == 1
+        assert "Traceback" not in captured.err
+        assert needle in captured.err, f"사람이 읽는 문장이 아니다: {captured.err}"
+        assert str(blocked) in captured.err, (
+            f"어느 경로가 막혔는지 말하지 않았다: {captured.err}")
+
+
+def test_a_failed_copy_log_still_reports_what_was_copied(tmp_path, capsys):
+    """복사 기록을 남기지 못해도 이미 한 복사는 사실대로 알린다.
+
+    이 시점에는 복사가 이미 끝나 있다. 기록 실패를 이유로 말없이 돌아가면 사용자는
+    자기 디스크에 무엇이 생겼는지 모른 채 남는다. 실패는 실패대로 알리고 한 일은
+    한 일대로 알려야 한다.
+
+    copy-log.csv 자리에 폴더를 두어 파일을 여는 순간 OSError 가 나게 한다.
+    """
+    src = tmp_path / "in"
+    _write_png(src / "b.png", (0, 0, 17))
+    out = tmp_path / "out"
+    (out / "copy-log.csv").mkdir(parents=True)
+
+    code = main([str(src), "--output", str(out), "--apply", "--lang", "ko"])
+    captured = capsys.readouterr()
+
+    assert code == 1
+    assert "Traceback" not in captured.err
+    assert "저장할 수 없습니다" in captured.err, (
+        f"사람이 읽는 문장이 아니다: {captured.err}")
+    assert (out / "blue" / "b.png").exists(), "복사 자체는 되었어야 한다"
+    assert "1장을 복사했습니다" in captured.out, (
+        f"복사를 해놓고 알리지 않았다: {captured.out}")
+
+
 def test_skipping_an_existing_copy_is_still_a_success(tmp_path, capsys):
     """이미 있어 건너뛴 것은 실패가 아니다. 같은 명령의 재실행은 그냥 성공이어야 한다."""
     src = tmp_path / "in"

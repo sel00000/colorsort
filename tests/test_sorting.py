@@ -1,3 +1,6 @@
+import ast
+import inspect
+import textwrap
 from pathlib import Path
 
 import pytest
@@ -114,3 +117,37 @@ def test_execute_refuses_to_overwrite(tmp_path):
     assert len(errors) == 1
     assert errors[0].key == "error.copy_exists"
     assert (out / "blue" / "pic.png").read_bytes() == b"existing", "덮어쓰지 않아야 한다"
+
+
+def test_every_copy_error_carries_the_destination():
+    """execute_copies 가 내는 오류 Msg 는 하나도 빠짐없이 dest 를 담아야 한다.
+
+    cli.py 는 `failed = {e.params["dest"] for e in errors}` 로 실패한 복사를
+    되돌리기 기록에서 걸러낸다. dest 없는 오류 열쇠가 하나라도 늘면 그 자리에서
+    KeyError 가 나고, 하필 --apply 가 한창 돌아가는 도중에 죽는다.
+
+    그 경로를 실제로 지나가 보는 시험으로는 새로 늘어난 열쇠를 잡지 못한다.
+    아무도 지나가지 않는 새 갈래가 바로 위험한 갈래이기 때문이다. 그래서 원본을
+    직접 읽어 Msg 생성을 전부 세어 본다. 확인할 수 없는 형태면 통과시키지 않는다.
+    """
+    tree = ast.parse(textwrap.dedent(inspect.getsource(execute_copies)))
+    calls = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        name = func.id if isinstance(func, ast.Name) else getattr(func, "attr", None)
+        if name == "Msg":
+            calls.append(node)
+
+    assert calls, "execute_copies 안에서 Msg 생성을 하나도 찾지 못했다"
+    for call in calls:
+        key = call.args[0].value if call.args and isinstance(call.args[0], ast.Constant) else "?"
+        params = call.args[1] if len(call.args) > 1 else None
+        assert isinstance(params, ast.Dict), (
+            f"{key}: 인자가 사전 리터럴이 아니어서 dest 가 있는지 확인할 수 없다. "
+            f"확인할 수 없으면 통과시키지 않는다.")
+        names = [k.value for k in params.keys if isinstance(k, ast.Constant)]
+        assert "dest" in names, (
+            f"{key}: dest 를 담지 않았다. cli.py 가 이 오류를 만나면 "
+            f"--apply 도중에 KeyError 로 죽는다.")

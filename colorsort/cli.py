@@ -118,8 +118,15 @@ def main(argv: list[str] | None = None) -> int:
 
     # 미리보기에서도 사본 경로를 채운다. 어디로 갈지 보려고 미리보기를 하는 것이므로
     # 그 칸이 비어 있으면 미리보기의 목적이 사라진다.
-    write_results_csv(results, items, output_root / "results.csv", lang)
-    write_run_json(output_root / "run.json", config, len(results), args.apply, lang)
+    try:
+        write_results_csv(results, items, output_root / "results.csv", lang)
+        write_run_json(output_root / "run.json", config, len(results), args.apply, lang)
+    except OSError as exc:
+        # 쓸 수 없는 --output 은 흔한 실수다. 보호된 폴더나 동기화 폴더를 가리키거나,
+        # 표를 엑셀로 열어둔 채 다시 돌리면 여기서 막힌다. 다른 오류와 마찬가지로
+        # 문장으로 알린다. 아직 복사한 것이 없으므로 그대로 멈춘다.
+        print(t("error.write_failed", lang, path=output_root, error=exc), file=sys.stderr)
+        return 1
 
     print()
     exit_code = 0
@@ -129,8 +136,15 @@ def main(argv: list[str] | None = None) -> int:
         # 실제로 만들어진 사본만 기록한다. 되돌리기용 기록이므로, 하지 않은 복사가
         # 적혀 있으면 그것을 보고 되돌리는 사용자가 자기 파일을 지우게 된다.
         failed = {e.params["dest"] for e in errors}
-        write_copy_log([i for i in items if i.dest not in failed],
-                       output_root / "copy-log.csv")
+        try:
+            write_copy_log([i for i in items if i.dest not in failed],
+                           output_root / "copy-log.csv")
+        except OSError as exc:
+            # 복사는 이미 끝났다. 여기서 곧장 돌아가면 사용자는 자기 디스크에 무엇이
+            # 생겼는지 모른 채 남는다. 실패는 실패대로 알리되 요약은 그대로 내보낸다.
+            print(t("error.write_failed", lang, path=output_root / "copy-log.csv", error=exc),
+                  file=sys.stderr)
+            exit_code = 1
         print(t("summary.copied", lang, n=len(results), copied=copied))
         if errors:
             print(t("summary.problems", lang, n=len(errors)), file=sys.stderr)
