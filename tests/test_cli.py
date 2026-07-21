@@ -232,3 +232,81 @@ def test_rerunning_does_not_count_its_own_copies(tmp_path, capsys):
 
     assert "Msg(" not in captured.err, f"복사 오류가 Msg 객체로 찍혔다: {captured.err}"
     assert "이미 존재하여 건너뜀" in captured.err
+
+
+def test_copy_log_never_records_a_copy_that_did_not_happen(tmp_path):
+    """사용자가 직접 넣어둔 파일의 자리는 복사 기록에 남지 않는다.
+
+    복사 기록은 되돌리기용이다. 하지도 않은 복사가 적혀 있으면, 그 기록을 보고
+    되돌리려는 사용자가 이 도구가 만들지도 않은 자기 파일을 지우게 된다.
+    원본을 건드리지 않는다는 약속은 지켜지지만 되돌리기 기록이 엉뚱한 곳을 가리킨다.
+    """
+    src = tmp_path / "in"
+    _write_png(src / "b.png", (0, 0, 17))
+    out = tmp_path / "out"
+    mine = out / "blue" / "b.png"
+    mine.parent.mkdir(parents=True)
+    mine.write_text("사용자가 직접 넣어둔 소중한 파일", encoding="utf-8")
+
+    assert main([str(src), "--output", str(out), "--apply", "--lang", "ko"]) == 0
+
+    assert mine.read_text(encoding="utf-8") == "사용자가 직접 넣어둔 소중한 파일"
+    logged = [r["사본경로"] for r in _rows(out / "copy-log.csv")]
+    assert logged == [], f"하지 않은 복사가 되돌리기 기록에 남았다: {logged}"
+
+
+def test_files_inside_the_output_folder_are_reported_not_dropped_in_silence(tmp_path, capsys):
+    """--output 이 이미 사진이 든 폴더를 가리키면 몇 장이 빠졌는지 말해야 한다.
+
+    실제 자료 폴더가 A/ 와 B/ 이므로 --output A 는 충분히 일어날 수 있는 실수다.
+    말없이 빼면 사용자는 검사되지 않은 사진이 있다는 사실조차 알 수 없다.
+    """
+    root = tmp_path / "in"
+    _write_png(root / "A" / "1.png", (0, 0, 17))
+    _write_png(root / "A" / "2.png", (0, 17, 2))
+    _write_png(root / "B" / "3.png", (0, 0, 17))
+
+    assert main([str(root), "--output", str(root / "A"), "--lang", "ko"]) == 0
+    ko = capsys.readouterr().out
+    assert "총 1장" in ko
+    assert "제외한 파일: 2장" in ko, f"제외한 사실을 알리지 않았다: {ko}"
+
+    assert main([str(root), "--output", str(root / "A"), "--lang", "en"]) == 0
+    en = capsys.readouterr().out
+    assert "Excluded 2 file(s)" in en, f"제외한 사실을 알리지 않았다: {en}"
+
+
+def test_a_hard_copy_failure_shows_up_in_the_exit_code(tmp_path, capsys):
+    """복사가 전부 실패했는데 0을 돌려주면 자동 실행이 실패를 알아채지 못한다.
+
+    목적지 폴더가 놓일 자리에 같은 이름의 '파일'을 두면 mkdir 이 OSError 를 낸다.
+    """
+    src = tmp_path / "in"
+    _write_png(src / "b.png", (0, 0, 17))
+    out = tmp_path / "out"
+    out.mkdir()
+    (out / "blue").write_text("폴더 자리를 막고 있는 파일", encoding="utf-8")
+
+    code = main([str(src), "--output", str(out), "--apply", "--lang", "ko"])
+    captured = capsys.readouterr()
+
+    assert code == 1, "복사가 하나도 되지 않았는데 성공으로 끝났다"
+    assert "복사 실패" in captured.err
+    assert "0장을 복사했습니다" in captured.out, (
+        f"한 장도 복사하지 못했는데 복사했다고 말한다: {captured.out}")
+
+
+def test_skipping_an_existing_copy_is_still_a_success(tmp_path, capsys):
+    """이미 있어 건너뛴 것은 실패가 아니다. 같은 명령의 재실행은 그냥 성공이어야 한다."""
+    src = tmp_path / "in"
+    _write_png(src / "b.png", (0, 0, 17))
+    out = tmp_path / "out"
+
+    assert main([str(src), "--output", str(out), "--apply", "--lang", "ko"]) == 0
+    capsys.readouterr()
+
+    assert main([str(src), "--output", str(out), "--apply", "--lang", "ko"]) == 0
+    again = capsys.readouterr()
+    assert "이미 존재하여 건너뜀" in again.err
+    assert "0장을 복사했습니다" in again.out, (
+        f"건너뛰기만 했는데 복사했다고 말한다: {again.out}")

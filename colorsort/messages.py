@@ -56,14 +56,16 @@ CATALOG: dict[str, dict[str, str]] = {
             "파일 크기가 {file_bytes:,}바이트로 전체 중앙값({median:,.0f}바이트)에 비해 "
             "큽니다. 픽셀은 비었는데 파일이 크므로 원본을 직접 확인해 보세요.",
 
+        # --- 알림 ---
+        "notice.excluded": "  출력 폴더 안에 있어 제외한 파일: {n}장",
+
         # --- 요약 출력 ---
         "summary.total": "  총 {n}장을 검사했습니다.",
         "summary.review_detail": "      (검토 내역: {detail})",
         "summary.low_confidence": "    신호가 약해 신뢰도 낮음: {n}장",
         "summary.next_step": "  실제로 복사하려면 --apply 를 붙여 다시 실행하세요.",
         "summary.originals_safe": "  원본은 어떤 경우에도 변경되지 않습니다.",
-        "summary.copied": "  총 {n}장을 검사하고 복사했습니다.",
-        "summary.copy_count": "    복사 완료: {n}장",
+        "summary.copied": "  총 {n}장을 검사하고 {copied}장을 복사했습니다.",
         "summary.problems": "    문제 {n}건:",
         "summary.out_dir": "    결과 폴더: {path}",
         "summary.table": "    표: {path}",
@@ -153,14 +155,16 @@ CATALOG: dict[str, dict[str, str]] = {
             "({median:,.0f} bytes). The pixels are empty but the file is big, so please "
             "check the original.",
 
+        # --- notices ---
+        "notice.excluded": "  Excluded {n} file(s) inside the output folder.",
+
         # --- summary output ---
         "summary.total": "  Checked {n} images.",
         "summary.review_detail": "      (review breakdown: {detail})",
         "summary.low_confidence": "    Low confidence due to weak signal: {n}",
         "summary.next_step": "  To actually copy the files, run again with --apply.",
         "summary.originals_safe": "  Originals are never modified.",
-        "summary.copied": "  Checked and copied {n} images.",
-        "summary.copy_count": "    Copied: {n}",
+        "summary.copied": "  Checked {n} images, copied {copied}.",
         "summary.problems": "    {n} problem(s):",
         "summary.out_dir": "    Output folder: {path}",
         "summary.table": "    Table: {path}",

@@ -15,29 +15,34 @@ from .rules import crosscheck_file_sizes, decide
 from .sorting import execute_copies, find_collisions, plan_copies
 
 
-def _input_pngs(input_root: Path, output_root: Path) -> list[Path]:
-    """훑을 PNG 목록. 출력 폴더 안은 제외한다.
+def _input_pngs(input_root: Path, output_root: Path) -> tuple[list[Path], int]:
+    """훑을 PNG 목록과, 출력 폴더 안이라 제외한 개수.
 
     README 는 입력 '.' 에 --output results 를 권하므로 출력 폴더가 입력 폴더 안에
     있는 것이 보통이다. 걸러내지 않으면 한 번 --apply 한 뒤의 재실행이 자기 사본을
     원본으로 세어 196 -> 392 -> 784 로 불어난다.
 
+    제외한 개수도 함께 돌려준다. --output 이 이미 사진이 들어있는 폴더를 가리키면
+    원본이 말없이 빠지므로, 몇 장이 빠졌는지 반드시 알려야 하기 때문이다.
+
     출력 폴더가 입력 폴더 밖이면 걸리는 것이 없으므로 동작이 달라지지 않는다.
     """
     out_resolved = output_root.resolve()
-    return sorted(
-        p for p in input_root.rglob("*.png")
-        if p.is_file() and out_resolved not in p.resolve().parents
-    )
+    found = sorted(p for p in input_root.rglob("*.png") if p.is_file())
+    kept = [p for p in found if out_resolved not in p.resolve().parents]
+    return kept, len(found) - len(kept)
 
 
 def run(input_root: Path, output_root: Path, config: Config,
-        apply: bool) -> tuple[list[FileResult], list[CopyItem]]:
+        apply: bool) -> tuple[list[FileResult], list[CopyItem], int]:
     """전체 파이프라인. 파일명은 판정에 사용하지 않는다.
 
     언어를 전혀 모르는 채로 동작한다. 문장은 출력 단계에서만 만들어진다.
+
+    복사는 하지 않는다. apply 는 받아만 두고 쓰지 않으며, 실제 복사는 main 이
+    execute_copies 로 한다. 반환값은 (판정 결과, 복사 계획, 제외한 파일 수) 다.
     """
-    paths = _input_pngs(input_root, output_root)
+    paths, n_excluded = _input_pngs(input_root, output_root)
 
     results: list[FileResult] = []
     for path in paths:
@@ -53,7 +58,7 @@ def run(input_root: Path, output_root: Path, config: Config,
 
     results = crosscheck_file_sizes(results, config)
     items = plan_copies(results, input_root, output_root, config)
-    return results, items
+    return results, items, n_excluded
 
 
 def _build_parser(lang: str) -> argparse.ArgumentParser:
@@ -92,10 +97,16 @@ def main(argv: list[str] | None = None) -> int:
         print(t("error.no_input_dir", lang, path=input_root), file=sys.stderr)
         return 1
 
-    results, items = run(input_root, output_root, config, args.apply)
+    results, items, n_excluded = run(input_root, output_root, config, args.apply)
+
+    if n_excluded:
+        print(t("notice.excluded", lang, n=n_excluded))
 
     if not results:
-        print(t("error.no_png", lang, path=input_root), file=sys.stderr)
+        # 전부 출력 폴더 안이라 빠진 것이라면 '없다'고 하지 않는다. 파일은 분명히
+        # 있고, 위의 알림이 무슨 일이 일어났는지 이미 사실대로 말한다.
+        if not n_excluded:
+            print(t("error.no_png", lang, path=input_root), file=sys.stderr)
         return 1
 
     collisions = find_collisions(items)
@@ -105,25 +116,34 @@ def main(argv: list[str] | None = None) -> int:
             print(t("error.collision_row", lang, dest=dest, n=len(sources)), file=sys.stderr)
         return 1
 
-    write_results_csv(results, items if args.apply else [],
-                      output_root / "results.csv", lang)
+    # 미리보기에서도 사본 경로를 채운다. 어디로 갈지 보려고 미리보기를 하는 것이므로
+    # 그 칸이 비어 있으면 미리보기의 목적이 사라진다.
+    write_results_csv(results, items, output_root / "results.csv", lang)
     write_run_json(output_root / "run.json", config, len(results), args.apply, lang)
 
     print()
+    exit_code = 0
     if args.apply:
-        print(t("summary.copied", lang, n=len(results)))
+        # 보고하기 전에 먼저 복사한다. 순서가 반대면 하지도 않은 복사를 알리게 된다.
         copied, errors = execute_copies(items)
-        write_copy_log(items, output_root / "copy-log.csv")
-        print(t("summary.copy_count", lang, n=copied))
+        # 실제로 만들어진 사본만 기록한다. 되돌리기용 기록이므로, 하지 않은 복사가
+        # 적혀 있으면 그것을 보고 되돌리는 사용자가 자기 파일을 지우게 된다.
+        failed = {e.params["dest"] for e in errors}
+        write_copy_log([i for i in items if i.dest not in failed],
+                       output_root / "copy-log.csv")
+        print(t("summary.copied", lang, n=len(results), copied=copied))
         if errors:
             print(t("summary.problems", lang, n=len(errors)), file=sys.stderr)
             for e in errors[:10]:
                 # execute_copies 는 Msg 를 돌려준다. 렌더링하지 않으면 객체가 찍힌다.
                 print(f"      {render(e, lang)}", file=sys.stderr)
+            # 이미 있어 건너뛴 것은 실패가 아니다. 같은 명령의 재실행은 성공이어야 한다.
+            if any(e.key == "error.copy_failed" for e in errors):
+                exit_code = 1
         print(t("summary.out_dir", lang, path=output_root))
     else:
         print(summarize(results, config, lang))
 
     print(t("summary.table", lang, path=output_root / "results.csv"))
     print()
-    return 0
+    return exit_code
