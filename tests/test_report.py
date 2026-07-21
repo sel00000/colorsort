@@ -49,7 +49,7 @@ def test_csv_has_one_row_per_file_with_evidence(tmp_path):
     assert rows[0]["판정"] == "BLUE"
     assert "파랑" in rows[0]["사유"]
     assert rows[0]["파랑픽셀수"] == "100"
-    assert rows[0]["사본경로"] == "/out/blue/a__1.png"
+    assert rows[0]["사본경로"] == str(Path("/out/blue/a__1.png"))
     assert rows[1]["판정"] == "GREEN"
     assert rows[2]["판정"] == "ABSTAIN"
     assert "파일 크기" in rows[2]["경고"]
@@ -75,8 +75,8 @@ def test_every_csv_column_holds_the_value_it_names(tmp_path):
         rows = list(csv.DictReader(fh))
 
     expected = {
-        "원본경로": "/in/a/2.png",
-        "사본경로": "/out/green/a__2.png",
+        "원본경로": str(Path("/in/a/2.png")),
+        "사본경로": str(Path("/out/green/a__2.png")),
         "판정": "GREEN",
         "사유": render(green.decision.reason, "ko"),
         "신뢰도": "높음",
@@ -126,8 +126,8 @@ def test_copy_log_records_source_and_dest(tmp_path):
     write_copy_log(items, out)
     with out.open(encoding="utf-8-sig", newline="") as fh:
         rows = list(csv.DictReader(fh))
-    assert rows[0]["원본경로"] == "/in/a/1.png"
-    assert rows[0]["사본경로"] == "/out/blue/a__1.png"
+    assert rows[0]["원본경로"] == str(Path("/in/a/1.png"))
+    assert rows[0]["사본경로"] == str(Path("/out/blue/a__1.png"))
 
 
 def test_run_json_records_provenance(tmp_path):
