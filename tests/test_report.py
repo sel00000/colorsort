@@ -135,12 +135,30 @@ def test_run_json_records_provenance(tmp_path):
     write_run_json(out, DEFAULT_CONFIG, n_files=196, applied=False, lang="en")
     data = json.loads(out.read_text(encoding="utf-8"))
     assert data["파일수"] == 196
-    assert data["실제복사여부"] is False
+    assert data["복사요청여부"] is False
     assert data["표시언어"] == "en"
     assert data["폴더이름"]["review"] == "review"
     assert data["설정"]["rho_blue"] == 0.90
     assert "규칙버전" in data
     assert "실행시각" in data
+
+
+def test_run_json_records_that_copying_was_requested_not_that_it_happened(tmp_path):
+    """이 열쇠는 '요청'이지 '결과'가 아니다.
+
+    write_run_json 은 복사보다 먼저 불리고 복사 건수를 받지도 않으므로, 값이 가리킬
+    수 있는 것은 --apply 를 줬는지뿐이다. 예전 이름(실제복사여부)은 결과를 약속해서,
+    사본이 전부 이미 있어 0장을 복사한 재실행에서도 참으로 남아 기록이 거짓말을 했다.
+    실제로 몇 장이 복사됐는지는 copy-log.csv 와 터미널 요약이 맡는다.
+
+    그러므로 미리보기와 --apply 실행은 복사 건수와 무관하게 이 값이 서로 달라야 한다.
+    """
+    dry, applied = tmp_path / "dry.json", tmp_path / "applied.json"
+    write_run_json(dry, DEFAULT_CONFIG, n_files=1, applied=False)
+    write_run_json(applied, DEFAULT_CONFIG, n_files=1, applied=True)
+
+    assert json.loads(dry.read_text(encoding="utf-8"))["복사요청여부"] is False
+    assert json.loads(applied.read_text(encoding="utf-8"))["복사요청여부"] is True
 
 
 def test_summary_counts_each_folder():

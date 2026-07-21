@@ -75,7 +75,7 @@ def write_run_json(path: Path, config: Config, n_files: int, applied: bool,
         "실행시각": datetime.now().isoformat(timespec="seconds"),
         "표시언어": lang,
         "파일수": n_files,
-        "실제복사여부": applied,
+        "복사요청여부": applied,
         "폴더이름": {
             "blue": config.folder_blue,
             "green": config.folder_green,
