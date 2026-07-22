@@ -18,8 +18,10 @@ from PySide6.QtWidgets import QApplication
 def _install_stub(name: str, source: str) -> types.ModuleType:  # 통합 때 삭제
     mod = types.ModuleType(name)
     mod.__file__ = f"<stub {name}>"
-    exec(compile(source, f"<stub {name}>", "exec"), mod.__dict__)
+    # exec 전에 등록해야 스텁 안 dataclass가 문자열 애노테이션("str | None")을
+    # sys.modules[cls.__module__]로 해석할 때 죽지 않는다.
     sys.modules[name] = mod
+    exec(compile(source, f"<stub {name}>", "exec"), mod.__dict__)
     pkg_name, _, child = name.rpartition(".")
     if pkg_name:
         try:
@@ -189,8 +191,127 @@ def tr(key: str, lang: str, **params) -> str:
     return text.format(**params) if params else text
 '''
 
-_install_stub("colorsortgui.enhance", _ENHANCE_SRC)   # 통합 때 삭제
-_install_stub("colorsortgui.i18n", _I18N_SRC)         # 통합 때 삭제
+# 썸네일 캐시 스텁(계약 get_thumb). 실제 파일을 읽지 않고 유효한 정사각 PNG를 돌려준다.
+_THUMBCACHE_SRC = '''\
+import tempfile
+from pathlib import Path
+from PIL import Image
+
+_DIR = Path(tempfile.mkdtemp(prefix="stub_thumbs_"))
+
+def get_thumb(cache_dir, source, fp: str, size: int = 144) -> Path:
+    out = _DIR / (fp + ".png")
+    if not out.exists():
+        Image.new("RGB", (size, size), (40, 40, 40)).save(out)
+    return out
+'''
+
+# 프로젝트 창구 스텁(계약 PhotoItem/ProjectState/open_project/apply_copies/set_human/undo).
+# 3장짜리 가짜 상태(파랑1·초록1·리뷰1)를 만든다. 계약 필드를 그대로 갖춰 C1 교체가 매끄럽게.
+_PROJECT_SRC = '''\
+import types
+from dataclasses import dataclass, field
+from pathlib import Path
+
+from colorsort.models import Msg
+
+
+@dataclass
+class PhotoItem:
+    path: Path
+    rel: str
+    fp: str
+    result: object
+    machine_sub: str
+    human: "str | None" = None
+
+    @property
+    def effective_sub(self) -> str:
+        if self.human == "BLUE":
+            return "blue"
+        if self.human == "GREEN":
+            return "green"
+        return self.machine_sub
+
+    @property
+    def dest_name(self) -> str:
+        return self.path.name
+
+    @property
+    def dest(self) -> str:
+        return f"{self.effective_sub}/{self.dest_name}"
+
+
+@dataclass
+class ProjectState:
+    input_root: Path
+    output_root: Path
+    items: list
+    store: object = None
+    n_excluded: int = 0
+    undo_stack: list = field(default_factory=list)
+
+    def counts(self) -> dict:
+        c = {"all": len(self.items), "blue": 0, "green": 0, "review": 0,
+             "no-signal": 0, "mixed": 0, "other": 0}
+        for i in self.items:
+            sub = i.effective_sub
+            if sub == "blue":
+                c["blue"] += 1
+            elif sub == "green":
+                c["green"] += 1
+            else:
+                c["review"] += 1
+                c[sub.split("/", 1)[1]] += 1
+        return c
+
+
+def _result(label, reason_code, peak, n_lit, f_blue):
+    meas = types.SimpleNamespace(peak=peak, n_lit_1=n_lit, f_blue=f_blue,
+                                 n_gated=n_lit, n_blue=int(round(f_blue * n_lit)),
+                                 n_green=n_lit - int(round(f_blue * n_lit)))
+    dec = types.SimpleNamespace(label=label, reason=Msg("reason." + reason_code, {}),
+                                reason_code=reason_code)
+    return types.SimpleNamespace(measurements=meas, decision=dec)
+
+
+def open_project(input_root, output_root):
+    root = Path(input_root)
+    items = [
+        PhotoItem(root / "b.png", "b.png", "aa" + "0" * 62,
+                  _result("BLUE", "pure_blue", 200, 64, 1.0), "blue"),
+        PhotoItem(root / "g.png", "g.png", "bb" + "0" * 62,
+                  _result("GREEN", "pure_green", 200, 64, 0.0), "green"),
+        PhotoItem(root / "dark.png", "dark.png", "cc" + "0" * 62,
+                  _result("ABSTAIN", "no_signal", 0, 0, 0.0), "review/no-signal"),
+    ]
+    return ProjectState(Path(input_root), Path(output_root), items)
+
+
+def apply_copies(state):
+    return len(state.items), []
+
+
+def set_human(state, item, label):
+    state.undo_stack.append((item.fp, item.human))
+    item.human = label
+
+
+def undo(state):
+    if not state.undo_stack:
+        return None
+    fp, prev = state.undo_stack.pop()
+    for i in state.items:
+        if i.fp == fp:
+            i.human = prev
+            return i
+    return None
+'''
+
+_install_stub("colorsortgui.enhance", _ENHANCE_SRC)         # 통합 때 삭제
+_install_stub("colorsortgui.i18n", _I18N_SRC)               # 통합 때 삭제
+_install_stub("colorsortgui.thumbcache", _THUMBCACHE_SRC)   # 통합 때 삭제
+_install_stub("colorsortgui.project", _PROJECT_SRC)         # 통합 때 삭제
 # ==================== 통합 때 삭제 (END) ====================
 
 
@@ -198,3 +319,10 @@ _install_stub("colorsortgui.i18n", _I18N_SRC)         # 통합 때 삭제
 def qapp():
     app = QApplication.instance() or QApplication([])
     yield app
+
+
+@pytest.fixture
+def fake_project():
+    """통합 때 삭제: 주입된 project 스텁(3장짜리 가짜 상태)을 쓰겠다는 표식 fixture."""
+    import colorsortgui.project as project
+    yield project
