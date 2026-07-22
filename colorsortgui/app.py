@@ -38,6 +38,8 @@ def main(argv=None) -> int:
 
     app = QApplication(argv)
     app.setApplicationName("Colorsort")
+    # 첫 실행의 언어 대화상자도 테마를 입어야 하므로 대화상자보다 먼저 적용한다.
+    app.setStyleSheet(QSS)
     settings = load_settings()
     lang = settings.get("lang")
     if lang not in ("en", "ko"):
@@ -46,7 +48,6 @@ def main(argv=None) -> int:
         lang = dlg.selected() or DEFAULT_LANG
         settings["lang"] = lang
         save_settings(settings)
-    app.setStyleSheet(QSS)
     win = MainWindow(lang=lang, settings=settings)
     win.show()
     code = app.exec()

@@ -13,14 +13,15 @@ C = {
 QSS = f"""
 QMainWindow {{ background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
     stop:0 {C['BG0']}, stop:0.55 {C['BG1']}, stop:1 {C['BG2']}); }}
-QWidget {{ color: {C['TEXT']}; font-family: "Segoe UI"; font-size: 13px; }}
+QWidget {{ color: {C['TEXT']};
+    font-family: "Segoe UI", "Malgun Gothic", sans-serif; font-size: 14px; }}
 QFrame#sidebar {{ background: {C['PANEL']}; border: none; }}
 QFrame.card {{ background: {C['CARD']}; border: 1px solid {C['HAIR']}; border-radius: 12px; }}
-QLabel.k {{ color: {C['MUT']}; font-size: 10px; letter-spacing: 2px; }}
+QLabel.k {{ color: {C['MUT']}; font-size: 11px; font-weight: 600; letter-spacing: 2px; }}
 QLabel.mut {{ color: {C['MUT']}; }}
 QLabel.mono {{ font-family: {C['MONO']}; }}
 QPushButton {{ background: rgba(255,255,255,0.06); border: 1px solid {C['HAIR']};
-    border-radius: 9px; padding: 7px 14px; }}
+    border-radius: 9px; padding: 8px 15px; font-weight: 600; }}
 QPushButton:hover {{ background: rgba(255,255,255,0.10); }}
 QPushButton:focus {{ outline: none; border: 1px solid {C['MUT']}; }}
 QPushButton#primary {{ background: {C['RED']}; border: none; color: white; font-weight: 700; }}
