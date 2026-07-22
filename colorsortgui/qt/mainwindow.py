@@ -121,7 +121,9 @@ class MainWindow(QMainWindow):
 
     # ── 화면 구성 ──
     def _build_sidebar(self) -> QFrame:
-        bar = QFrame(); bar.setObjectName("sidebar"); bar.setFixedWidth(184)
+        # 폭을 고정하지 않는다 — 글자 크기(배율 포함)에 맞춰 로고·메뉴가 요구하는
+        # 만큼 스스로 넓어져야 글자가 잘리지 않는다 (2026-07-22 실기 피드백).
+        bar = QFrame(); bar.setObjectName("sidebar"); bar.setMinimumWidth(180)
         lay = QVBoxLayout(bar)
         logo = QLabel(f"COLOR<span style='color:{C['RED']}'>SORT</span>")
         logo.setTextFormat(Qt.RichText)

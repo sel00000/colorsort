@@ -80,3 +80,14 @@ def test_window_resize_scales_fonts(qapp, fake_project):
     w.resize(980, 640)
     w._rescale()
     assert qapp._qss_scale == 1.0
+
+
+def test_sidebar_grows_to_fit_texts(qapp, fake_project):
+    """고정 폭 회귀 방지 — 사이드바 요구 폭이 로고·메뉴 글자 요구 폭보다 작으면 안 된다."""
+    from PySide6.QtWidgets import QFrame, QLabel
+    w = MainWindow(lang="ko", settings={})
+    bar = w.findChild(QFrame, "sidebar")
+    logo = w.findChild(QLabel, "logo")
+    assert bar.sizeHint().width() >= logo.sizeHint().width()
+    for b in w.nav.values():
+        assert bar.sizeHint().width() >= b.sizeHint().width()
