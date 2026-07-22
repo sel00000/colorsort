@@ -8,7 +8,7 @@ from pathlib import Path
 
 from PIL import Image
 from PySide6.QtCore import (QByteArray, QObject, QRunnable, QSize, Qt, QThread,
-                            QThreadPool, Signal)
+                            QThreadPool, QTimer, Signal)
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (QAbstractItemView, QButtonGroup, QFileDialog,
                                QFrame, QHBoxLayout, QLabel, QListView,
@@ -24,7 +24,7 @@ from colorsortgui.settings import save_settings
 from colorsortgui.thumbcache import get_thumb
 from .detail import DetailPage
 from .langdialog import LanguageDialog
-from .theme import C
+from .theme import C, qss
 from .widgets import StatCard
 
 _TABS = ("all", "blue", "green", "review")
@@ -110,6 +110,12 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.settings_page)        # index 3
         outer.addWidget(self.stack, 1)
 
+        # 창이 커지면 글자도 커진다(2026-07-22 실기 피드백). QSS 재적용은 비싸므로
+        # 크기 조절이 멎은 뒤 한 번만, 배율이 실제로 바뀌었을 때만 수행한다.
+        self._scale_timer = QTimer(self)
+        self._scale_timer.setSingleShot(True)
+        self._scale_timer.timeout.connect(self._rescale)
+
         self._restore_geometry()
         self.set_tab("all")
 
@@ -119,7 +125,7 @@ class MainWindow(QMainWindow):
         lay = QVBoxLayout(bar)
         logo = QLabel(f"COLOR<span style='color:{C['RED']}'>SORT</span>")
         logo.setTextFormat(Qt.RichText)
-        logo.setStyleSheet("font-size: 18px; font-weight: 800; letter-spacing: 1px;")
+        logo.setObjectName("logo")
         lay.addWidget(logo)
         lay.addSpacing(8)
         self.nav = {}
@@ -439,6 +445,20 @@ class MainWindow(QMainWindow):
         if self._input_root is not None:
             new.open_folder(self._input_root)
         self.close()
+
+    # ── 창 크기 연동 글자 배율 ──
+    def resizeEvent(self, ev) -> None:
+        super().resizeEvent(ev)
+        self._scale_timer.start(150)
+
+    def _rescale(self) -> None:
+        from PySide6.QtWidgets import QApplication
+        scale = max(1.0, min(self.width() / 980.0, 1.5))
+        scale = round(scale * 20) / 20               # 0.05 단위 — 미세 변동에 재적용 안 함
+        app = QApplication.instance()
+        if getattr(app, "_qss_scale", None) != scale:
+            app._qss_scale = scale
+            app.setStyleSheet(qss(scale))
 
     # ── 창 상태 ──
     def _restore_geometry(self) -> None:

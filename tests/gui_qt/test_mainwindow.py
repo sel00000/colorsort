@@ -70,3 +70,13 @@ def test_apply_language_recreates_window(qapp, fake_project, monkeypatch, tmp_pa
     assert new is not w and new._lang == "ko"
     assert new.nav["library"].text() == "라이브러리"
     new.close()
+
+
+def test_window_resize_scales_fonts(qapp, fake_project):
+    w = MainWindow(lang="en", settings={})
+    w.resize(1600, 900)
+    w._rescale()                                   # 타이머 대신 직접 호출
+    assert qapp._qss_scale > 1.0
+    w.resize(980, 640)
+    w._rescale()
+    assert qapp._qss_scale == 1.0

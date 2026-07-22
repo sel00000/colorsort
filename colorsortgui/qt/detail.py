@@ -9,7 +9,6 @@ from colorsortgui.enhance import (auto_gain, channel_view, judgment_view,
                                   manual_view, probe)
 from colorsortgui.i18n import tr
 from .imageview import ZoomView
-from .theme import C
 from .widgets import RhoRuler
 
 _MODES = ("original", "corrected", "judgment", "green_only", "blue_only")
@@ -30,12 +29,10 @@ class DetailPage(QWidget):
         self.view.probed.connect(self.on_probe)
         self.overlay = QLabel("", self.view)
         self.overlay.setAlignment(Qt.AlignCenter)
-        self.overlay.setStyleSheet(
-            f"color: {C['MUT']}; background: rgba(0,0,0,0.55); font-size: 15px;")
+        self.overlay.setProperty("class", "overlay")   # 크기·색은 테마 QSS가 배율까지 관리
         self.overlay.hide()
         self.probe_label = QLabel(" ")
-        self.probe_label.setProperty("class", "mono")
-        self.probe_label.setStyleSheet(f"color: {C['CYAN']}; font-size: 11px;")
+        self.probe_label.setProperty("class", "probe")
         left.addWidget(self.view, 1)
         left.addWidget(self.probe_label)
         root.addLayout(left, 3)

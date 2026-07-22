@@ -42,9 +42,8 @@ class StatCard(QFrame):
         lay.setContentsMargins(14, 10, 14, 10)
         k = QLabel(title); k.setProperty("class", "k")
         self.value_label = QLabel("0")
-        self.value_label.setStyleSheet(
-            f"font-size: 22px; font-weight: 800; color: {accent};"
-            "font-variant-numeric: tabular-nums;")
+        self.value_label.setProperty("class", "statv")  # 크기·굵기는 테마 QSS가 배율까지 관리
+        self.value_label.setStyleSheet(f"color: {accent};")
         lay.addWidget(k); lay.addWidget(self.value_label)
 
     def set_value(self, n: int) -> None:
