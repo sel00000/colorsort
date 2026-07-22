@@ -15,8 +15,17 @@ from .rules import crosscheck_file_sizes, decide
 from .sorting import execute_copies, find_collisions, plan_copies
 
 
-def _input_pngs(input_root: Path, output_root: Path) -> tuple[list[Path], int]:
-    """훑을 PNG 목록과, 출력 폴더 안이라 제외한 개수.
+# 스캔할 사진 확장자. 대소문자는 suffix.lower() 로 흡수하므로 소문자만 적는다.
+_PHOTO_SUFFIXES = frozenset({
+    ".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp", ".tif", ".tiff",
+})
+
+
+def _input_photos(input_root: Path, output_root: Path) -> tuple[list[Path], int]:
+    """훑을 사진 목록과, 제외되어 빠진 개수.
+
+    지원 형식은 PNG·JPG·JPEG·BMP·GIF·WEBP·TIF·TIFF. 확장자 대소문자는
+    suffix.lower() 로 흡수하므로 .JPG 든 .jpg 든 모든 OS에서 똑같이 걸린다.
 
     README 는 입력 '.' 에 --output results 를 권하므로 출력 폴더가 입력 폴더 안에
     있는 것이 보통이다. 걸러내지 않으면 한 번 --apply 한 뒤의 재실행이 자기 사본을
@@ -37,7 +46,10 @@ def _input_pngs(input_root: Path, output_root: Path) -> tuple[list[Path], int]:
     out_resolved = output_root.resolve()
     marker_dirs = {f.parent.resolve() for f in input_root.rglob("run.json")}
     marker_dirs.discard(input_root.resolve())
-    found = sorted(p for p in input_root.rglob("*.png") if p.is_file())
+    found = sorted(
+        p for p in input_root.rglob("*")
+        if p.suffix.lower() in _PHOTO_SUFFIXES and p.is_file()
+    )
 
     def _skip(p: Path) -> bool:
         rp = p.resolve()
@@ -58,7 +70,7 @@ def run(input_root: Path, output_root: Path, config: Config,
     복사는 하지 않는다. apply 는 받아만 두고 쓰지 않으며, 실제 복사는 main 이
     execute_copies 로 한다. 반환값은 (판정 결과, 복사 계획, 제외한 파일 수) 다.
     """
-    paths, n_excluded = _input_pngs(input_root, output_root)
+    paths, n_excluded = _input_photos(input_root, output_root)
 
     results: list[FileResult] = []
     for path in paths:
@@ -122,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
         # 전부 출력 폴더 안이라 빠진 것이라면 '없다'고 하지 않는다. 파일은 분명히
         # 있고, 위의 알림이 무슨 일이 일어났는지 이미 사실대로 말한다.
         if not n_excluded:
-            print(t("error.no_png", lang, path=input_root), file=sys.stderr)
+            print(t("error.no_photos", lang, path=input_root), file=sys.stderr)
         return 1
 
     collisions = find_collisions(items)

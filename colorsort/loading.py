@@ -28,7 +28,12 @@ def _transparent_indices(info: dict) -> set[int]:
 
 
 def load_image(path: Path) -> LoadResult:
-    """PNG 한 장을 읽는다. 실패해도 예외를 던지지 않고 load_error에 담아 반환한다."""
+    """사진 한 장을 읽는다. PNG·JPG·BMP·GIF·WEBP 등 PIL이 여는 형식이면 무엇이든 된다.
+
+    팔레트·투명도는 PNG 계열에만 있는 개념이라, JPG처럼 없는 형식은 아래 두 분기를
+    자연히 지나쳐 곧장 RGB 변환으로 간다. 실패해도 예외를 던지지 않고 load_error에
+    담아 반환한다.
+    """
     path = Path(path)
     try:
         file_bytes = path.stat().st_size

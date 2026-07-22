@@ -112,14 +112,14 @@ N["run@top"] = (4.5, 4.56, 5.0, 0.08)
 N["exec@top"] = (11.8, 4.56, 4.5, 0.08)
 
 # run 내부 칩
-node("_input_pngs", 2.0, 3.5, "core", w=1.85, h=0.5, fs=10)
+node("_input_photos", 2.0, 3.5, "core", w=1.85, h=0.5, fs=10)
 node("load_image", 4.0, 3.5, "core", w=1.75, h=0.5, fs=10)
 node("measure", 5.55, 3.5, "core", w=1.4, h=0.5, fs=10)
 node("decide", 6.9, 3.5, "core", w=1.3, h=0.5, fs=10)
 node("crosscheck_file_sizes", 3.0, 2.35, "core", w=2.9, h=0.5, fs=9.5)
 node("plan_copies", 6.0, 2.35, "core", w=1.9, h=0.5, fs=10)
 ax.text(5.45, 3.96, "장마다 반복", fontsize=11, color=MUT, family=KR, ha="center", zorder=3)
-for a, b in [("_input_pngs", "load_image"), ("load_image", "measure"),
+for a, b in [("_input_photos", "load_image"), ("load_image", "measure"),
              ("measure", "decide")]:
     edge(a, b, GREY, 1.3, 0.0, ms=9, z=3)
 edge("decide", "crosscheck_file_sizes", GREY, 1.3, -0.35, ms=9, z=3)

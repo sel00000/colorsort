@@ -35,6 +35,7 @@ QLabel.mono {{ font-family: {C['MONO']}; }}
 QLabel.statv {{ font-size: {s(36)}px; font-weight: 800; }}
 QLabel.probe {{ color: {C['CYAN']}; font-family: {C['MONO']}; font-size: {s(16)}px; }}
 QLabel.overlay {{ color: {C['MUT']}; background: rgba(0,0,0,0.55); font-size: {s(24)}px; }}
+QLabel#emptyNotice {{ color: {C['MUT']}; padding: {s(24)}px; }}
 QPushButton {{ background: rgba(255,255,255,0.06); border: 1px solid {C['HAIR']};
     border-radius: 9px; padding: {s(8)}px {s(15)}px; font-weight: 700; }}
 QPushButton:hover {{ background: rgba(255,255,255,0.10); }}

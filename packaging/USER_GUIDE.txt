@@ -9,6 +9,7 @@
 
 WHAT IT IS
   Sorts photos into BLUE / GREEN by reading the pixel colors.
+  Reads PNG, JPG, JPEG, BMP, GIF, WEBP and TIFF, subfolders included.
   File names are ignored — only the actual colors count.
   Photos it cannot judge go to "review" for your eyes.
   Your original photos are NEVER modified. The app only makes copies.
@@ -76,6 +77,7 @@ GOOD TO KNOW
 
 이 프로그램은
   사진의 픽셀 색을 직접 읽어 파랑 / 초록으로 분류합니다.
+  PNG · JPG · JPEG · BMP · GIF · WEBP · TIFF를 읽고, 하위 폴더까지 함께 찾습니다.
   파일 이름은 보지 않습니다 — 실제 색만 봅니다.
   판단하기 애매한 사진은 "확인 필요"로 분리해 사람에게 넘깁니다.
   원본 사진은 절대 수정되지 않습니다. 언제나 사본만 만듭니다.

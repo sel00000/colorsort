@@ -21,3 +21,11 @@ def test_unknown_key_raises():
         tr("no.such.key", "en"); assert False
     except KeyError:
         pass
+
+def test_no_photos_key_replaces_no_png():
+    assert "err.no_photos" in T["en"] and "err.no_photos" in T["ko"]
+    assert "err.no_png" not in T["en"] and "err.no_png" not in T["ko"]
+
+def test_all_excluded_formats_count():
+    assert "5" in tr("err.all_excluded", "en", n=5)
+    assert "5" in tr("err.all_excluded", "ko", n=5)

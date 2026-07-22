@@ -72,7 +72,7 @@ CATALOG: dict[str, dict[str, str]] = {
 
         # --- 오류 ---
         "error.no_input_dir": "오류: 입력 폴더를 찾을 수 없습니다: {path}",
-        "error.no_png": "오류: {path} 안에서 PNG 파일을 찾지 못했습니다.",
+        "error.no_photos": "오류: {path} 안에서 사진 파일(PNG·JPG 등)을 찾지 못했습니다.",
         "error.collision": "오류: 사본 이름이 겹칩니다. 덮어쓰지 않기 위해 중단합니다.",
         "error.collision_row": "  {dest} <- 원본 {n}개",
         "error.write_failed": "오류: 결과를 저장할 수 없습니다: {path} ({error})",
@@ -173,7 +173,7 @@ CATALOG: dict[str, dict[str, str]] = {
 
         # --- errors ---
         "error.no_input_dir": "Error: input folder not found: {path}",
-        "error.no_png": "Error: no PNG files found in {path}.",
+        "error.no_photos": "Error: no photo files (PNG, JPG, etc.) found in {path}.",
         "error.collision": "Error: copy names collide. Stopping so nothing is overwritten.",
         "error.collision_row": "  {dest} <- {n} source file(s)",
         "error.write_failed": "Error: could not write the results: {path} ({error})",

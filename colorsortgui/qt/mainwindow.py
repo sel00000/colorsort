@@ -215,6 +215,14 @@ class MainWindow(QMainWindow):
         self.grid.setSpacing(8)
         self.grid.itemDoubleClicked.connect(self._open_detail)
         v.addWidget(self.grid, 1)
+
+        # 사진이 0장일 때 그리드 대신 가운데 뜨는 안내. 폴더를 열기 전에는 숨겨 둔다.
+        self.empty_notice = QLabel("")
+        self.empty_notice.setObjectName("emptyNotice")
+        self.empty_notice.setAlignment(Qt.AlignCenter)
+        self.empty_notice.setWordWrap(True)
+        self.empty_notice.setVisible(False)
+        v.addWidget(self.empty_notice, 1)
         return page
 
     # ── 공개 API ──
@@ -303,6 +311,20 @@ class MainWindow(QMainWindow):
             self.grid.addItem(QListWidgetItem(text))
             self._pool.start(_ThumbRunner(i, cache_dir, item.path, item.fp,
                                           self._thumb_signals))
+        self._update_empty_notice()
+
+    def _update_empty_notice(self) -> None:
+        """사진이 0장이면 그리드 대신 안내를 가운데 보여준다. 전부 이전 결과 폴더
+        사본이라 제외된 경우엔 '사진이 없다'가 아니라 제외 안내를 낸다."""
+        has_photos = bool(self._items)
+        self.grid.setVisible(has_photos)
+        self.empty_notice.setVisible(not has_photos)
+        if not has_photos:
+            n = getattr(self._state, "n_excluded", 0) or 0
+            if n > 0:
+                self.empty_notice.setText(tr("err.all_excluded", self._lang, n=n))
+            else:
+                self.empty_notice.setText(tr("err.no_photos", self._lang))
 
     def _set_thumb(self, row: int, path: str) -> None:
         if 0 <= row < self.grid.count():
