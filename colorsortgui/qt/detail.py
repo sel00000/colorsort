@@ -35,18 +35,22 @@ class DetailPage(QWidget):
         self.probe_label.setProperty("class", "probe")
         left.addWidget(self.view, 1)
         left.addWidget(self.probe_label)
-        root.addLayout(left, 3)
+        root.addLayout(left, 1)
 
+        # 카드 폭에 상한을 둔다 — 큰 글자에서 카드가 폭을 다 먹으면 주인공(사진)이
+        # 실처럼 눌린다. 남는 공간은 전부 왼쪽 이미지가 가진다.
         card = QFrame(); card.setProperty("class", "card")
+        card.setMinimumWidth(420); card.setMaximumWidth(660)
         side = QVBoxLayout(card)
         self.title = QLabel(""); self.title.setProperty("class", "k")
         side.addWidget(self.title)
 
-        seg = QHBoxLayout(); self._mode_group = QButtonGroup(self)
+        # 보기 5종은 한 줄에 안 들어간다(큰 글자) — 3+2 두 줄 격자로.
+        seg = QGridLayout(); self._mode_group = QButtonGroup(self)
         self._mode_btns = {}
-        for mode in _MODES:
+        for i, mode in enumerate(_MODES):
             b = QPushButton(); b.setCheckable(True); b.setProperty("class", "tab")
-            self._mode_group.addButton(b); seg.addWidget(b)
+            self._mode_group.addButton(b); seg.addWidget(b, i // 3, i % 3)
             self._mode_btns[mode] = b
             b.clicked.connect(lambda _=False, m=mode: self.set_view_mode(m))
         side.addLayout(seg)
@@ -59,6 +63,7 @@ class DetailPage(QWidget):
             v = QLabel(); v.setProperty("class", "mono")
             grid.addWidget(k, row, 0); grid.addWidget(v, row, 1, Qt.AlignRight)
             self._rows[key] = (k, v)
+        self._rows["insp.reason"][1].setWordWrap(True)   # 문장이라 줄바꿈 필수
         side.addLayout(grid)
 
         self.ruler = RhoRuler(); side.addWidget(self.ruler)
@@ -92,10 +97,11 @@ class DetailPage(QWidget):
         acts.addWidget(self.blue_btn); acts.addWidget(self.green_btn)
         side.addWidget(self.save_btn)
         side.addLayout(acts)
-        side.addWidget(self.undo_btn)
+        tail = QHBoxLayout()
+        tail.addWidget(self.undo_btn); tail.addWidget(self.back_btn)
         side.addStretch(1)
-        side.addWidget(self.back_btn)
-        root.addWidget(card, 2)
+        side.addLayout(tail)
+        root.addWidget(card, 0)
 
         self._mode = "corrected"
 

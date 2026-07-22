@@ -13,8 +13,8 @@ from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (QAbstractItemView, QButtonGroup, QFileDialog,
                                QFrame, QHBoxLayout, QLabel, QListView,
                                QListWidget, QListWidgetItem, QMainWindow,
-                               QProgressBar, QPushButton, QStackedWidget,
-                               QVBoxLayout, QWidget)
+                               QProgressBar, QPushButton, QSizePolicy,
+                               QStackedWidget, QVBoxLayout, QWidget)
 
 from colorsort import messages
 from colorsort.loading import load_image
@@ -124,6 +124,8 @@ class MainWindow(QMainWindow):
         # 폭을 고정하지 않는다 — 글자 크기(배율 포함)에 맞춰 로고·메뉴가 요구하는
         # 만큼 스스로 넓어져야 글자가 잘리지 않는다 (2026-07-22 실기 피드백).
         bar = QFrame(); bar.setObjectName("sidebar"); bar.setMinimumWidth(180)
+        # 창이 좁아도 사이드바는 눌리지 않는다 — 눌리면 글자부터 잘린다.
+        bar.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         lay = QVBoxLayout(bar)
         logo = QLabel(f"COLOR<span style='color:{C['RED']}'>SORT</span>")
         logo.setTextFormat(Qt.RichText)
@@ -204,7 +206,9 @@ class MainWindow(QMainWindow):
         self.grid = QListWidget()
         self.grid.setViewMode(QListView.IconMode)
         self.grid.setIconSize(QSize(_THUMB, _THUMB))
-        self.grid.setUniformItemSizes(True)
+        # 칸 크기를 명시한다. uniformItemSizes는 아이콘이 도착하기 전(텍스트뿐일 때)의
+        # 크기를 고정해 버려, 늦게 온 썸네일이 납작한 칸에 구겨진다.
+        self.grid.setGridSize(QSize(_THUMB + 28, _THUMB + 64))
         self.grid.setResizeMode(QListView.Adjust)
         self.grid.setMovement(QListView.Static)
         self.grid.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -218,7 +222,8 @@ class MainWindow(QMainWindow):
         path = Path(path)
         self._input_root = path
         self._settings["last_folder"] = str(path)
-        self.path_chip.setText(str(path))
+        self.path_chip.setText(path.name or str(path))   # 긴 경로가 머리글을 밀어내지 않게
+        self.path_chip.setToolTip(str(path))
         self.progress.setRange(0, 0)              # 불확정 진행 바
         self.progress.setVisible(True)
         self._worker = SortWorker(path, path / "results")

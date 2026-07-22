@@ -91,3 +91,12 @@ def test_sidebar_grows_to_fit_texts(qapp, fake_project):
     assert bar.sizeHint().width() >= logo.sizeHint().width()
     for b in w.nav.values():
         assert bar.sizeHint().width() >= b.sizeHint().width()
+
+
+def test_grid_cells_and_sidebar_hold_shape(qapp, fake_project):
+    """아이콘 지각 도착에도 칸이 안 찌그러지고, 사이드바는 압축되지 않는다."""
+    from PySide6.QtWidgets import QFrame, QSizePolicy
+    w = MainWindow(lang="en", settings={})
+    assert w.grid.gridSize().width() >= 144 and w.grid.gridSize().height() >= 144 + 40
+    bar = w.findChild(QFrame, "sidebar")
+    assert bar.sizePolicy().horizontalPolicy() == QSizePolicy.Fixed

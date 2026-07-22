@@ -50,7 +50,8 @@ QPushButton.tab {{ border-radius: {s(16)}px; padding: {s(7)}px {s(16)}px; color:
     background: rgba(255,255,255,0.05); border: none; }}
 QPushButton.tab:checked {{ background: {C['TEXT']}; color: {C['BG1']}; font-weight: 800; }}
 QListWidget {{ background: transparent; border: none; }}
-QListWidget::item {{ color: {C['MUT']}; border-radius: 10px; padding: 4px; }}
+QListWidget::item {{ color: {C['MUT']}; border-radius: 10px; padding: 4px;
+    background: rgba(255,255,255,0.045); }}
 QListWidget::item:selected {{ background: rgba(213,50,63,0.18); }}
 QSlider::groove:horizontal {{ height: 4px; background: {C['HAIR']}; border-radius: 2px; }}
 QSlider::handle:horizontal {{ width: {s(16)}px; height: {s(16)}px; margin: -{s(6)}px 0;
