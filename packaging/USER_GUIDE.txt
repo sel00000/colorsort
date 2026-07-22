@@ -1,0 +1,142 @@
+========================================================================
+ COLORSORT 2.0 — USER GUIDE / 사용 설명서
+ English first, 한국어는 아래쪽에 있습니다.
+========================================================================
+
+------------------------------------------------------------------------
+ ENGLISH
+------------------------------------------------------------------------
+
+WHAT IT IS
+  Sorts photos into BLUE / GREEN by reading the pixel colors.
+  File names are ignored — only the actual colors count.
+  Photos it cannot judge go to "review" for your eyes.
+  Your original photos are NEVER modified. The app only makes copies.
+
+YOU NEED
+  Windows 10 or 11. Nothing to install. No internet needed.
+
+FIRST RUN
+  1) Unzip. Keep Colorsort.exe and these guides together
+     (a USB drive is fine — everything travels together).
+  2) Double-click Colorsort.exe.
+     - If Windows shows "Windows protected your PC":
+       click "More info", then "Run anyway". Only needed once.
+     - The first launch can take a few seconds. This is normal.
+  3) Pick your language (English / Korean).
+     You can change it later in Settings.
+
+SORTING
+  1) Click "Choose folder" or drag a photo folder onto the window.
+     Sorting starts right away.
+  2) When done, the cards show: Scanned / Blue / Green / Review.
+     Use the tabs (All / Blue / Green / Review) to browse.
+  3) Results are saved INSIDE your photo folder, under "results":
+       results\blue                blue photos (copies)
+       results\green               green photos (copies)
+       results\review\no-signal    nearly black photos
+       results\review\mixed        blue + green in one photo
+       results\review\other        anything else unclear
+       results\results.csv         every judgment, with the reason
+     Your originals stay exactly where they were.
+
+LOOKING AT A PHOTO
+  - Double-click any thumbnail to open it big.
+  - It opens already brightened, so dark photos are visible.
+  - View buttons:
+      Original    the photo as it really is (often almost black)
+      Corrected   brightened for your eyes (default)
+      Judgment    paints what the program counted as blue / green / other
+      Green only / Blue only   one color channel at a time
+  - Brightness and Gamma sliders fine-tune the view. "Auto" resets.
+    Viewing NEVER changes the judgment or your files.
+  - Mouse wheel = zoom, drag = move around.
+    The line under the photo shows the exact G / B values of the
+    pixel under your cursor.
+  - "Save corrected PNG" saves the brightened view as a NEW file.
+
+DECIDING
+  - "To Blue" / "To Green" moves the photo's copy to that folder.
+  - "Undo" reverses your last move.
+  - Decisions are remembered by the photo's content fingerprint:
+    they survive re-sorting, file renames, and moving the USB drive
+    to another computer. See past moves under "Log".
+
+GOOD TO KNOW
+  - Re-sorting the same folder (or a parent folder) never counts the
+    copies twice — previous result folders are recognized and skipped.
+  - Make the window bigger and the text grows with it.
+  - "No signal — nothing to enhance" means the photo is truly empty
+    (all black). That is why it sits in review\no-signal.
+  - results.csv opens in Excel and explains every judgment.
+
+------------------------------------------------------------------------
+ 한국어
+------------------------------------------------------------------------
+
+이 프로그램은
+  사진의 픽셀 색을 직접 읽어 파랑 / 초록으로 분류합니다.
+  파일 이름은 보지 않습니다 — 실제 색만 봅니다.
+  판단하기 애매한 사진은 "확인 필요"로 분리해 사람에게 넘깁니다.
+  원본 사진은 절대 수정되지 않습니다. 언제나 사본만 만듭니다.
+
+필요한 것
+  Windows 10 또는 11. 설치할 것 없음. 인터넷 불필요.
+
+처음 실행
+  1) 압축을 풉니다. Colorsort.exe와 이 설명서를 같은 곳에 두세요
+     (USB 그대로도 좋습니다 — 전부 함께 이동합니다).
+  2) Colorsort.exe를 더블클릭합니다.
+     - "Windows의 PC 보호" 파란 창이 뜨면:
+       "추가 정보" → "실행"을 누르세요. 처음 한 번만 하면 됩니다.
+     - 첫 실행은 몇 초 걸릴 수 있습니다. 정상입니다.
+  3) 언어를 고릅니다 (English / 한국어).
+     나중에 설정에서 바꿀 수 있습니다.
+
+분류하기
+  1) "폴더 선택"을 누르거나, 사진 폴더를 창으로 끌어다 놓으세요.
+     바로 분류가 시작됩니다.
+  2) 끝나면 카드에 숫자가 뜹니다: 검사 / 파랑 / 초록 / 확인 필요.
+     탭(전체 / 파랑 / 초록 / 확인 필요)으로 골라 볼 수 있습니다.
+  3) 결과는 사진 폴더 안 "results"에 저장됩니다:
+       results\blue                파랑 사진 (사본)
+       results\green               초록 사진 (사본)
+       results\review\no-signal    거의 새까만 사진
+       results\review\mixed        파랑+초록이 함께 있는 사진
+       results\review\other        그 밖의 애매한 사진
+       results\results.csv         모든 판정과 그 이유
+     원본은 원래 자리에 그대로 있습니다.
+
+사진 자세히 보기
+  - 썸네일을 더블클릭하면 크게 열립니다.
+  - 열리는 순간 이미 밝게 보정되어 있어, 어두운 사진도 형태가 보입니다.
+  - 보기 버튼:
+      원본        실제 모습 그대로 (대개 거의 검정)
+      보정        눈으로 보기 위한 밝은 화면 (기본)
+      판정 색칠    프로그램이 어느 픽셀을 파랑/초록/중간으로 셌는지 색칠
+      초록만 / 파랑만   한 색 채널씩 따로
+  - 밝기·감마 슬라이더로 미세 조정, "자동"으로 초기화.
+    보기는 판정에도, 파일에도 절대 영향을 주지 않습니다.
+  - 마우스 휠 = 확대, 드래그 = 이동.
+    사진 아래 줄에 마우스가 가리키는 픽셀의 G / B 값이 표시됩니다.
+  - "보정본 PNG 저장"은 밝게 만든 화면을 새 파일로 저장합니다.
+
+확정하기
+  - "파랑으로" / "초록으로"를 누르면 그 사진의 사본이 해당 폴더로
+    이동합니다.
+  - "되돌리기"는 마지막 이동을 취소합니다.
+  - 확정은 사진 내용의 지문으로 기억됩니다: 다시 분류해도, 파일
+    이름을 바꿔도, USB를 다른 컴퓨터에 꽂아도 유지됩니다.
+    지금까지 옮긴 내역은 "기록" 메뉴에서 볼 수 있습니다.
+
+알아두면 좋은 것
+  - 같은 폴더(또는 그 상위 폴더)를 다시 분류해도 사본이 이중으로
+    세어지지 않습니다 — 이전 결과 폴더를 알아보고 건너뜁니다.
+  - 창을 키우면 글자도 함께 커집니다.
+  - "신호 없음 — 보정할 수 없습니다"는 사진이 정말 비어 있다는 뜻
+    입니다 (전부 검정). 그래서 review\no-signal에 들어갑니다.
+  - results.csv를 엑셀에서 열면 모든 판정의 이유를 볼 수 있습니다.
+
+========================================================================
+ Colorsort 2.0 · Originals are never modified / 원본은 절대 수정되지 않습니다
+========================================================================
