@@ -3,6 +3,30 @@
 사진의 **픽셀 색**을 직접 보고 파랑과 초록으로 나눠 폴더에 정리합니다.
 파일 이름은 판정에 쓰지 않습니다. 이름이 무엇이든 사진의 실제 색만 봅니다.
 
+## GUI 프로그램 (v2) — 파이썬 없이 더블클릭
+
+Windows 10/11용 프로그램 하나로 같은 일을 화면에서 합니다. 받는 사람은:
+
+1. 압축을 풀고 `Colorsort.exe`를 더블클릭합니다. 처음 한 번 파란 경고가 뜨면
+   함께 들어 있는 `README_FIRST.txt`대로 "추가 정보 → 실행"을 누릅니다.
+2. 언어를 고릅니다(기본 English). 사진 폴더를 선택하거나 창에 끌어다 놓으면
+   자동으로 분류가 시작됩니다.
+3. 결과는 사진 폴더 안 `results`에 생깁니다 — `blue`, `green`, 그리고 애매한
+   사진은 `review/no-signal`(신호 없음)·`review/mixed`(파랑+초록)·`review/other`.
+   썸네일을 더블클릭하면 어두운 사진도 자동 보정으로 형태가 보이고,
+   [To Blue]/[To Green] 버튼으로 직접 확정할 수 있습니다. 확정은 기억되어
+   다시 실행해도, 파일 이름이 바뀌어도 유지됩니다. **원본은 절대 수정되지 않습니다.**
+
+배포 묶음 만들기(보내는 사람, 이 폴더에서):
+
+    py -3.12 packaging\make_icon.py
+    py -3.12 -m PyInstaller packaging\colorsort.spec --noconfirm
+
+`dist\Colorsort.exe`와 `packaging\README_FIRST.txt` 두 파일을 zip으로 묶어
+USB에 넣으면 끝입니다. 설계·계획 문서: `docs/superpowers/plans/2026-07-21-gui-exe.md`
+
+아래는 명령줄(CLI) 버전 사용법입니다. GUI와 같은 판정 로직을 씁니다.
+
 ## 쓰는 법
 
 ### 1. 명령 프롬프트 열기
