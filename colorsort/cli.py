@@ -26,10 +26,26 @@ def _input_pngs(input_root: Path, output_root: Path) -> tuple[list[Path], int]:
     원본이 말없이 빠지므로, 몇 장이 빠졌는지 반드시 알려야 하기 때문이다.
 
     출력 폴더가 입력 폴더 밖이면 걸리는 것이 없으므로 동작이 달라지지 않는다.
+
+    이번 실행의 출력만이 아니라 **과거 실행의 결과 폴더**도 건너뛴다(2026-07-22
+    사용자 승인). 하위 폴더를 정리한 뒤 상위 폴더를 다시 고르는 실사용에서 사본이
+    원본으로 이중 집계되기 때문이다. 판별은 이름이 아니라 이 도구가 결과 폴더에
+    반드시 남기는 run.json 마커로 한다 — 이름만 results 인 진짜 사진 폴더는 다치지
+    않는다. 입력 폴더 자체에 run.json 이 있으면 사용자가 결과 폴더를 일부러 고른
+    것이므로 건너뛰지 않는다.
     """
     out_resolved = output_root.resolve()
+    marker_dirs = {f.parent.resolve() for f in input_root.rglob("run.json")}
+    marker_dirs.discard(input_root.resolve())
     found = sorted(p for p in input_root.rglob("*.png") if p.is_file())
-    kept = [p for p in found if out_resolved not in p.resolve().parents]
+
+    def _skip(p: Path) -> bool:
+        rp = p.resolve()
+        if out_resolved in rp.parents:
+            return True
+        return any(m in rp.parents for m in marker_dirs)
+
+    kept = [p for p in found if not _skip(p)]
     return kept, len(found) - len(kept)
 
 

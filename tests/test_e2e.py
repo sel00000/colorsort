@@ -27,9 +27,14 @@ pytestmark = pytest.mark.skipif(
 
 
 def _all_pngs() -> list[Path]:
+    """원본만 센다. 사용자가 GUI/CLI로 A·B 안을 정리하면 그 안에 results/(run.json
+    마커)가 생기는데, 그 사본·썸네일은 원본이 아니다 — 제품 스캔 규칙과 동일하게
+    마커 폴더를 건너뛴다(2026-07-22 스캔 규칙 승인과 함께 갱신)."""
     out = []
     for d in IMAGE_DIRS:
-        out.extend(sorted(p for p in d.rglob("*.png") if p.is_file()))
+        markers = {f.parent for f in d.rglob("run.json")}
+        out.extend(sorted(p for p in d.rglob("*.png")
+                          if p.is_file() and not any(m in p.parents for m in markers)))
     return out
 
 
