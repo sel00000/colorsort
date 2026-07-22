@@ -86,8 +86,11 @@ def test_regression_196_same_judgments(tmp_path):
     if src is None:
         import pytest; pytest.skip("실사진 없음")
     corpus = tmp_path / "corpus"
-    shutil.copytree(src / "A", corpus / "A")
-    shutil.copytree(src / "B", corpus / "B")
+    # 사용자가 GUI로 원본 폴더를 분류하면 그 안에 results/(사본·썸네일)가 생긴다.
+    # 그것은 원본이 아니므로 말뭉치에서 뺀다 — 도구 자신도 자기 출력은 검사하지 않는다.
+    skip_results = shutil.ignore_patterns("results")
+    shutil.copytree(src / "A", corpus / "A", ignore=skip_results)
+    shutil.copytree(src / "B", corpus / "B", ignore=skip_results)
     v1_results, _, _ = cli.run(corpus, tmp_path / "out1", DEFAULT_CONFIG, False)
     st = open_project(corpus, tmp_path / "out2")
     v1 = {r.path: (r.decision.label, r.decision.reason_code) for r in v1_results}
