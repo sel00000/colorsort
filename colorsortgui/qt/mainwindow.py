@@ -3,6 +3,7 @@
 분류는 QThread 워커로 돌린다(open_project 호출). 썸네일은 QThreadPool 러너가
 get_thumb를 불러 신호로 아이콘을 채운다. 파일 이동·되돌리기는 전부 project 창구가 한다.
 """
+import csv
 from pathlib import Path
 
 from PIL import Image
@@ -17,9 +18,12 @@ from PySide6.QtWidgets import (QAbstractItemView, QButtonGroup, QFileDialog,
 
 from colorsort import messages
 from colorsort.loading import load_image
+from colorsortgui import __version__
 from colorsortgui.i18n import tr
+from colorsortgui.settings import save_settings
 from colorsortgui.thumbcache import get_thumb
 from .detail import DetailPage
+from .langdialog import LanguageDialog
 from .theme import C
 from .widgets import StatCard
 
@@ -100,6 +104,10 @@ class MainWindow(QMainWindow):
         self.detail.back.connect(self._show_library)
         self.detail.save_btn.clicked.connect(self._save_png)
         self.stack.addWidget(self.detail)               # index 1
+        self.log_page = self._build_log()
+        self.stack.addWidget(self.log_page)             # index 2
+        self.settings_page = self._build_settings()
+        self.stack.addWidget(self.settings_page)        # index 3
         outer.addWidget(self.stack, 1)
 
         self._restore_geometry()
@@ -120,8 +128,13 @@ class MainWindow(QMainWindow):
                               ("log", "nav.log"), ("settings", "nav.settings"),
                               ("language", "nav.language")):
             b = QPushButton(tr(i18n_key, self._lang))
-            b.setCheckable(True); b.setProperty("class", "nav")
-            group.addButton(b); lay.addWidget(b); self.nav[key] = b
+            b.setProperty("class", "nav")
+            if key == "language":
+                # 언어는 화면이 아니라 즉시 실행되는 동작(대화상자)이라 체크 상태를 갖지 않는다.
+                b.setCheckable(False)
+            else:
+                b.setCheckable(True); group.addButton(b)
+            lay.addWidget(b); self.nav[key] = b
             b.clicked.connect(lambda _=False, k=key: self._nav(k))
         self.nav["library"].setChecked(True)
         lay.addStretch(1)
@@ -196,6 +209,7 @@ class MainWindow(QMainWindow):
     def open_folder(self, path: Path) -> None:
         path = Path(path)
         self._input_root = path
+        self._settings["last_folder"] = str(path)
         self.path_chip.setText(str(path))
         self.progress.setRange(0, 0)              # 불확정 진행 바
         self.progress.setVisible(True)
@@ -342,12 +356,89 @@ class MainWindow(QMainWindow):
             Image.fromarray(arr).save(chosen)
 
     def _nav(self, key: str) -> None:
-        if key == "review":
+        if key == "library":
+            self._show_library(); self.set_tab("all")
+        elif key == "review":
             self._show_library(); self.set_tab("review")
-        else:
-            self._show_library()
-            if key == "library":
-                self.set_tab("all")
+        elif key == "log":
+            self._refresh_log()
+            self.stack.setCurrentWidget(self.log_page)
+        elif key == "settings":
+            self.stack.setCurrentWidget(self.settings_page)
+        elif key == "language":
+            self._language_dialog()
+
+    # ── 기록 화면 ──
+    def _build_log(self) -> QWidget:
+        page = QWidget(); v = QVBoxLayout(page)
+        title = QLabel(tr("log.title", self._lang).upper())
+        title.setProperty("class", "k")
+        v.addWidget(title)
+        self.log_empty = QLabel(tr("log.empty", self._lang))
+        self.log_empty.setProperty("class", "mut")
+        self.log_list = QListWidget()
+        v.addWidget(self.log_empty)
+        v.addWidget(self.log_list, 1)
+        return page
+
+    def _refresh_log(self) -> None:
+        self.log_list.clear()
+        rows = []
+        if self._state is not None:
+            path = Path(self._state.output_root) / "moves-log.csv"
+            if path.exists():
+                with open(path, newline="", encoding="utf-8-sig") as f:
+                    rows = list(csv.DictReader(f))
+        for r in reversed(rows):                       # 최근 것이 위로
+            self.log_list.addItem(f"{r.get('time', '')}   {r.get('file', '')}   "
+                                  f"{r.get('from', '')} → {r.get('to', '')}")
+        self.log_empty.setVisible(not rows)
+        self.log_list.setVisible(bool(rows))
+
+    # ── 설정 화면 ──
+    def _build_settings(self) -> QWidget:
+        page = QWidget(); v = QVBoxLayout(page)
+        title = QLabel(tr("nav.settings", self._lang).upper())
+        title.setProperty("class", "k")
+        v.addWidget(title)
+        row = QHBoxLayout()
+        row.addWidget(QLabel(tr("nav.language", self._lang)))
+        self.lang_btn = QPushButton("한국어" if self._lang == "ko" else "English")
+        self.lang_btn.clicked.connect(self._language_dialog)
+        row.addWidget(self.lang_btn); row.addStretch(1)
+        v.addLayout(row)
+        note = QLabel(tr("settings.results_note", self._lang))
+        note.setProperty("class", "mut"); note.setWordWrap(True)
+        v.addWidget(note)
+        ver = QLabel(tr("settings.version", self._lang, v=__version__))
+        ver.setProperty("class", "mut")
+        v.addWidget(ver)
+        v.addStretch(1)
+        return page
+
+    # ── 언어 전환 ──
+    def _language_dialog(self) -> None:
+        dlg = LanguageDialog(self)
+        if self._lang == "ko":
+            dlg.ko.setChecked(True)
+        if dlg.exec():
+            self._apply_language(dlg.selected())
+
+    def _apply_language(self, lang: str) -> None:
+        """언어를 바꾸면 창을 새 언어로 다시 만든다. 모든 문구가 즉시 바뀌고,
+        보던 폴더는 자동으로 다시 연다(썸네일 캐시 덕에 몇 초면 끝난다)."""
+        if lang == self._lang:
+            return
+        self._settings["lang"] = lang
+        save_settings(self._settings)
+        from PySide6.QtWidgets import QApplication
+        new = MainWindow(lang=lang, settings=self._settings)
+        new.setGeometry(self.geometry())
+        QApplication.instance()._colorsort_win = new   # 참조를 붙잡아 GC를 막는다
+        new.show()
+        if self._input_root is not None:
+            new.open_folder(self._input_root)
+        self.close()
 
     # ── 창 상태 ──
     def _restore_geometry(self) -> None:

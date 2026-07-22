@@ -34,6 +34,8 @@ T = {
   "err.no_png": "No PNG photos found in this folder.",
   "err.write_failed": "Could not write to {path}. Close files opened from it and try again.",
   "log.title": "Moves you made", "log.empty": "No moves yet.",
+  "settings.results_note": "Results are saved to a 'results' folder inside the photo folder.",
+  "settings.version": "Version {v}",
  },
  "ko": {
   "app.title": "Colorsort",
@@ -66,6 +68,8 @@ T = {
   "err.no_png": "이 폴더에서 PNG 사진을 찾지 못했습니다.",
   "err.write_failed": "{path}에 쓸 수 없습니다. 열어 둔 파일을 닫고 다시 시도하세요.",
   "log.title": "옮긴 기록", "log.empty": "아직 옮긴 것이 없습니다.",
+  "settings.results_note": "결과는 사진 폴더 안 'results' 폴더에 저장됩니다.",
+  "settings.version": "버전 {v}",
  },
 }
 
