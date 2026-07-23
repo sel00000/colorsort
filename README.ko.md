@@ -170,3 +170,7 @@ python3 docs/diagrams/generate/build_all.py
 ## Authors
 
 - Kyung-Bo Kim
+
+## 라이선스
+
+[MIT 라이선스](LICENSE)로 공개합니다. Copyright (c) 2026 Kyung-Bo Kim.
