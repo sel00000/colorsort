@@ -158,6 +158,6 @@ py -3.12 -m PyInstaller packaging\colorsort.spec --noconfirm   # exe 빌드 → 
 python3 docs/diagrams/generate/build_all.py
 ```
 
-## 만든 사람
+## Authors
 
 - Kyung-Bo Kim
