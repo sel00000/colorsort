@@ -13,6 +13,8 @@ LNCAP picture에 lncap을 구분할수있고 PANC-1 picture 색을 빠르게 구
 
 cell에 형광 강도가 뚜렷하고 강하게 나타나는 이미지를 찾을 수 있습니다.
 
+연구자의 피드백으로 만들어졌습니다.
+
 <p align="center">
   <img src="docs/screenshots/demo.gif" alt="Colorsort 데모 — 폴더를 고르면 사진이 파랑/초록으로 자동 분류됨" width="850"><br>
   <em>폴더 하나만 고르면 끝: 검사 / 파랑 / 초록 / 확인 필요 — 이어서 확인과 확정까지. (예시 화면은 영어 UI이며, 한국어 UI도 지원합니다)</em>
