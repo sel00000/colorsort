@@ -4,6 +4,15 @@
 
 A Windows app that sorts photos into **Blue / Green** by reading their **actual pixel colors** — file names are ignored, only the colors count.
 
+It takes a long time to distinguish the cell for use after taking a picture with a microscope. It is one of the tools made to solve this problem.
+It was developed to promote the rapid development of biology.
+
+It is possible to find an image that shows a clear and strong fluorescence intensity in the cell according to the EMT score. However, blue and green are quickly distinguished without measuring the scroe value.
+
+Lncap can be distinguished in LNCAP picture, PANC-1 picture color can be quickly distinguished, and folder can be organized.
+
+An image with a clear and strong fluorescence intensity can be found in the cell.
+
 <p align="center">
   <img src="docs/screenshots/demo.gif" alt="Colorsort demo — pick a folder, photos get sorted into blue/green, inspect and confirm" width="850"><br>
   <em>One folder in, everything sorted: Scanned / Blue / Green / Review — then inspect and confirm the unclear ones.</em>
