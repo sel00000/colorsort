@@ -5,8 +5,8 @@
 사진의 **실제 픽셀 색**을 읽어 **파랑 / 초록**으로 자동 분류하는 Windows 프로그램입니다 — 파일 이름은 보지 않고, 오직 색만 봅니다.
 
 <p align="center">
-  <img src="docs/screenshots/library-ko.png" alt="Colorsort 메인 화면 — 사진 196장을 파랑/초록으로 분류" width="850"><br>
-  <em>폴더 하나만 고르면 끝: 검사 / 파랑 / 초록 / 확인 필요.</em>
+  <img src="docs/screenshots/demo.gif" alt="Colorsort 데모 — 폴더를 고르면 사진이 파랑/초록으로 자동 분류됨" width="850"><br>
+  <em>폴더 하나만 고르면 끝: 검사 / 파랑 / 초록 / 확인 필요 — 이어서 확인과 확정까지. (예시 화면은 영어 UI이며, 한국어 UI도 지원합니다)</em>
 </p>
 
 [**📦 최신 버전 다운로드**](../../releases/latest) — `Colorsort-2.1.0.zip` 안에 실행 파일, 첫 실행 안내, 사용 설명서(영/한)가 함께 들어 있습니다.
@@ -46,7 +46,7 @@
 ## 애매한 사진은 직접 확정
 
 <p align="center">
-  <img src="docs/screenshots/inspector-ko.png" alt="검사관 화면 — 어느 픽셀을 파랑으로 셌는지 색칠해 보여줌" width="850"><br>
+  <img src="docs/screenshots/inspector.png" alt="검사관 화면 — 어느 픽셀을 파랑으로 셌는지 색칠해 보여줌" width="850"><br>
   <em>검사관: 자동 보정된 화면, 픽셀 값 표시, 그리고 판정의 정확한 이유.</em>
 </p>
 

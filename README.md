@@ -5,8 +5,8 @@
 A Windows app that sorts photos into **Blue / Green** by reading their **actual pixel colors** — file names are ignored, only the colors count.
 
 <p align="center">
-  <img src="docs/screenshots/library-ko.png" alt="Colorsort main window — 196 photos sorted into blue/green" width="850"><br>
-  <em>One folder in, everything sorted: Scanned / Blue / Green / Review.</em>
+  <img src="docs/screenshots/demo.gif" alt="Colorsort demo — pick a folder, photos get sorted into blue/green, inspect and confirm" width="850"><br>
+  <em>One folder in, everything sorted: Scanned / Blue / Green / Review — then inspect and confirm the unclear ones.</em>
 </p>
 
 [**📦 Download the latest release**](../../releases/latest) — `Colorsort-2.1.0.zip` contains the executable, a first-run note, and the user guide (EN/KO).
@@ -46,7 +46,7 @@ your-folder\results\results.csv         every judgment, with the reason (opens i
 ## Deciding the unclear ones yourself
 
 <p align="center">
-  <img src="docs/screenshots/inspector-ko.png" alt="Inspector — judgment view paints which pixels counted as blue" width="850"><br>
+  <img src="docs/screenshots/inspector.png" alt="Inspector — judgment view paints which pixels counted as blue" width="850"><br>
   <em>The inspector: auto-brightened view, per-pixel readout, and the exact reason for the judgment.</em>
 </p>
 
