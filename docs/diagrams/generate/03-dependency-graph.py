@@ -3,13 +3,16 @@
 각 .py 의 실제 import/from 문을 화살표로 그린다 (A→B = A가 B를 import).
 3계층: 위 colorsortgui/qt · 중간 colorsortgui · 아래 colorsort.
 핵심: 코어(colorsort)는 GUI를 절대 import하지 않는다 — 의존은 경계를 넘어 아래로만.
+
+한/영 두 장을 만든다:  python3 03-dependency-graph.py ko | python3 03-dependency-graph.py en
 """
-import math
+import sys
 from pathlib import Path
 
 import matplotlib
 matplotlib.use("Agg")
 from matplotlib import font_manager, rcParams
+import matplotlib.patheffects as _pe
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 
@@ -25,15 +28,46 @@ KR = "Malgun Gothic"
 MONO = font_manager.FontProperties(
     fname="/home/pc/.local/share/fonts/win-kr/consola.ttf").get_name()
 
+# ── 큰 글자 상수 (2026-07 확정 · _common.py와 같은 값 — 이 파일은 자체 완결) ──
+S, FB, STROKE = 1.45, 20, 1.1
+LANG = "en" if "en" in sys.argv[1:] else "ko"
+SUF = "" if LANG == "ko" else "-en"
+
+# ── 영어 번역표 (모듈명·폴더명은 식별자라 번역하지 않는다) ───────────────────
+EN = {
+    "모듈 import 의존성 그래프": "Module Import Dependency Graph",
+    "화살표 = 그 모듈을 import 한다 · 굵은 보라 = 코어로 향하는 의존":
+        "Arrow = imports that module · bold violet = dependency toward the core",
+    "▲ colorsortgui 세계 (화면 + 로직)": "▲ colorsortgui world (screens + logic)",
+    "▼ colorsort 코어 — 위에서 아래로만 의존한다":
+        "▼ colorsort core — dependencies only point downward",
+    "코어(colorsort)로 향하는 import": "import toward the core (colorsort)",
+    "qt → colorsortgui import": "qt → colorsortgui import",
+    "app → qt (위로 · 유일한 예외)": "app → qt (upward · the only exception)",
+    "같은 계층 내부 import": "import inside the same layer",
+    "단방향": "one-way",
+}
+
+
+def t(s):
+    """ko면 원문, en이면 번역표에서 찾는다. 누락 시 KeyError로 즉시 실패."""
+    return s if LANG == "ko" else EN[s]
+
+
+def heavy(color):
+    """bold 글자를 한 단계 더 굵게 보이게 하는 같은 색 외곽선."""
+    return [_pe.withStroke(linewidth=STROKE, foreground=color)]
+
+
 INK, INK2, MUT = "#0b0b0b", "#52514e", "#898781"
 VIOLET, ORANGE, ROSE = "#4a3aa7", "#d1591f", "#b83d70"
 GREYLINE = "#a9a8a1"
 
 
-def tint(hexc, t):
+def tint(hexc, tt):
     h = hexc.lstrip("#")
     r, g, b = (int(h[i:i + 2], 16) for i in (0, 2, 4))
-    return tuple(((c * t + 255 * (1 - t)) / 255.0) for c in (r, g, b))
+    return tuple(((c * tt + 255 * (1 - tt)) / 255.0) for c in (r, g, b))
 
 
 # ── 노드 배치 순서 (교차 최소화: 각 계층 허브를 중앙에 정렬) ──────────────────
@@ -88,11 +122,11 @@ add(E_QTGUI, "qt:detail", ["gui:enhance", "gui:i18n"])
 add(E_UP, "gui:app", ["qt:mainwindow", "qt:langdialog", "qt:theme"])
 
 # ── 좌표 ────────────────────────────────────────────────────────────────────
-W, H = 19.0, 12.8
-NW, NH = 1.46, 0.60
-Y_QT, Y_GUI, Y_CORE = H - 2.5, H - 6.1, H - 9.9
-Y_BOUND = (Y_GUI + Y_CORE) / 2 + 0.15
-MARGIN = 1.0
+W, H = 28.0, 15.5
+NW, NH = 2.05, 0.75
+Y_QT, Y_GUI, Y_CORE = H - 4.3, H - 8.0, H - 12.3
+Y_BOUND = (Y_GUI + Y_CORE) / 2 + 0.20
+MARGIN = 1.28
 
 pos = {}
 
@@ -109,11 +143,23 @@ place(CORE, "core", Y_CORE)
 place(GUI, "gui", Y_GUI)
 place(QT, "qt", Y_QT)
 
-fig = plt.figure(figsize=(W, H))
+fig = plt.figure(figsize=(W * S, H * S))
 ax = fig.add_axes([0, 0, 1, 1])
 ax.set_xlim(0, W)
 ax.set_ylim(0, H)
 ax.axis("off")
+
+
+def T(x, y, s, size, color=INK, fam=KR, weight="normal", ha="left",
+      va="baseline", z=None, **extra):
+    """글자: 무조건 +FB pt·bold. 원래 bold였던 글자는 같은 색 외곽선으로 더 굵게."""
+    kw = dict(extra)
+    if weight == "bold":
+        kw["path_effects"] = heavy(color)
+    if z is not None:
+        kw["zorder"] = z
+    return ax.text(x, y, s, fontsize=size + FB, color=color, family=fam,
+                   fontweight="bold", ha=ha, va=va, **kw)
 
 
 def border_pt(c, tx, ty):
@@ -132,7 +178,7 @@ def draw_edge(src, dst, color, lw, rad, alpha=1.0, ms=13, z=2, dashed=False):
     p0 = border_pt(a, *b)
     p1 = border_pt(b, *a)
     ax.add_patch(FancyArrowPatch(
-        p0, p1, arrowstyle="-|>", mutation_scale=ms, lw=lw, color=color,
+        p0, p1, arrowstyle="-|>", mutation_scale=ms * S, lw=lw * S, color=color,
         alpha=alpha, connectionstyle=f"arc3,rad={rad}", zorder=z,
         linestyle="--" if dashed else "-", shrinkA=1, shrinkB=1,
         joinstyle="round", capstyle="round"))
@@ -158,13 +204,12 @@ def CORE_index(key):
 
 # ── 그리기 순서: 배경 엣지 먼저, 노드 나중 ──────────────────────────────────
 # 경계선 + 라벨
-ax.plot([0.4, W - 0.4], [Y_BOUND, Y_BOUND], color=INK2, lw=1.6, ls=(0, (7, 5)), zorder=1)
-ax.text(1.9, Y_BOUND + 0.20,
-        "▲ colorsortgui 세계 (화면 + 로직)", fontsize=12.5, color=INK2,
-        family=KR, ha="left", va="bottom")
-ax.text(1.9, Y_BOUND - 0.20,
-        "▼ colorsort 코어 — 위에서 아래로만 의존한다",
-        fontsize=12.5, color=VIOLET, family=KR, ha="left", va="top", fontweight="bold")
+ax.plot([0.4, W - 0.4], [Y_BOUND, Y_BOUND], color=INK2, lw=1.6 * S,
+        ls=(0, (7, 5)), zorder=1)
+T(2.15, Y_BOUND + 0.30, t("▲ colorsortgui 세계 (화면 + 로직)"), 12.5, INK2,
+  ha="left", va="bottom")
+T(2.15, Y_BOUND - 0.30, t("▼ colorsort 코어 — 위에서 아래로만 의존한다"), 12.5,
+  VIOLET, ha="left", va="top", weight="bold")
 
 # intra (thin gray)
 for s, d in E_INTRA:
@@ -187,9 +232,8 @@ def node(key, accent):
     ax.add_patch(FancyBboxPatch(
         (x - NW / 2, y - NH / 2), NW, NH,
         boxstyle="round,pad=0,rounding_size=0.10",
-        facecolor=tint(accent, 0.12), edgecolor=accent, linewidth=1.8, zorder=6))
-    ax.text(x, y, name, fontsize=11.5, color=INK, family=MONO,
-            ha="center", va="center", zorder=7)
+        facecolor=tint(accent, 0.12), edgecolor=accent, linewidth=1.8 * S, zorder=6))
+    T(x, y, name, 11.5, INK, MONO, ha="center", va="center", z=7)
 
 
 for n in CORE:
@@ -203,33 +247,32 @@ for n in QT:
 for y, lab, col in [(Y_QT, "colorsortgui/qt/", ROSE),
                     (Y_GUI, "colorsortgui/", ORANGE),
                     (Y_CORE, "colorsort/", VIOLET)]:
-    ax.text(0.5, y + NH / 2 + 0.28, lab, fontsize=14.5, color=col, family=MONO,
-            fontweight="bold", ha="left", va="bottom")
+    T(0.45, y + NH / 2 + 0.34, lab, 14.5, col, MONO, weight="bold",
+      ha="left", va="bottom")
 
 # ── 제목 ────────────────────────────────────────────────────────────────────
-ax.text(0.5, H - 0.55, "모듈 import 의존성 그래프", fontsize=25, color=INK,
-        family=KR, fontweight="bold")
-ax.text(0.5, H - 1.05,
-        "화살표 = 그 모듈을 import 한다 · 굵은 보라 = 코어로 향하는 의존",
-        fontsize=14, color=INK2, family=KR)
+T(0.5, H - 0.95, t("모듈 import 의존성 그래프"), 25, INK, KR, weight="bold")
+T(0.5, H - 1.70, t("화살표 = 그 모듈을 import 한다 · 굵은 보라 = 코어로 향하는 의존"),
+  14, INK2, KR)
 
 # ── 범례 (우상단) ───────────────────────────────────────────────────────────
-lx, ly = 12.6, H - 0.55
+lx, ly = 20.0, H - 0.80
 leg = [(VIOLET, "-", 2.5, "코어(colorsort)로 향하는 import"),
        (tint(ORANGE, 0.85), "-", 1.7, "qt → colorsortgui import"),
        (ROSE, "--", 1.7, "app → qt (위로 · 유일한 예외)"),
        (GREYLINE, "-", 1.2, "같은 계층 내부 import")]
 for i, (c, ls, lw, lab) in enumerate(leg):
-    yy = ly - i * 0.40
-    ax.plot([lx, lx + 0.7], [yy, yy], color=c, lw=lw, ls=ls, solid_capstyle="round")
-    ax.text(lx + 0.9, yy, lab, fontsize=12, color=INK2, family=KR, va="center")
+    yy = ly - i * 0.58
+    ax.plot([lx, lx + 1.0], [yy, yy], color=c, lw=lw * S, ls=ls,
+            solid_capstyle="round")
+    T(lx + 1.25, yy, t(lab), 12, INK2, KR, va="center")
 
 # ── 단방향 강조 배지 (경계 왼쪽) ────────────────────────────────────────────
-ax.text(0.5, Y_BOUND, "단방향", fontsize=13, color=VIOLET, family=KR,
-        fontweight="bold", ha="left", va="center",
-        bbox=dict(boxstyle="round,pad=0.35", facecolor=tint(VIOLET, 0.14),
-                  edgecolor=VIOLET, linewidth=1.6))
+T(0.45, Y_BOUND, t("단방향"), 13, VIOLET, KR, weight="bold", ha="left",
+  va="center",
+  bbox=dict(boxstyle="round,pad=0.35", facecolor=tint(VIOLET, 0.14),
+            edgecolor=VIOLET, linewidth=1.6 * S))
 
-OUT = Path(__file__).resolve().parent.parent / "03-dependency-graph.png"
+OUT = Path(__file__).resolve().parent.parent / f"03-dependency-graph{SUF}.png"
 fig.savefig(OUT, dpi=200, facecolor="white")
 print("saved", OUT)

@@ -1,151 +1,166 @@
-# 파랑/초록 사진 구별 도구
+# Colorsort
 
-사진의 **픽셀 색**을 직접 보고 파랑과 초록으로 나눠 폴더에 정리합니다.
-파일 이름은 판정에 쓰지 않습니다. 이름이 무엇이든 사진의 실제 색만 봅니다.
+**사진의 실제 픽셀 색을 읽어 파랑 / 초록으로 자동 분류하는 Windows 프로그램**
+**A Windows app that sorts photos into Blue / Green by reading their actual pixel colors**
 
-지원하는 사진 형식: **PNG · JPG · JPEG · BMP · GIF · WEBP · TIFF**.
-고른 폴더와 그 아래 하위 폴더까지 모두 찾습니다.
+[📦 다운로드 · Download (Releases)](../../releases/latest) &nbsp;·&nbsp; [한국어 설명](#한국어) &nbsp;·&nbsp; [English guide](#english)
 
-## GUI 프로그램 (v2) — 파이썬 없이 더블클릭
+![Colorsort 메인 화면 / main window](docs/screenshots/library-ko.png)
 
-Windows 10/11용 프로그램 하나로 같은 일을 화면에서 합니다. 받는 사람은:
+---
 
-1. 압축을 풀고 `Colorsort.exe`를 더블클릭합니다. 처음 한 번 파란 경고가 뜨면
-   함께 들어 있는 `README_FIRST.txt`대로 "추가 정보 → 실행"을 누릅니다.
-2. 언어를 고릅니다(기본 English). 사진 폴더를 선택하거나 창에 끌어다 놓으면
-   자동으로 분류가 시작됩니다.
-3. 결과는 사진 폴더 안 `results`에 생깁니다 — `blue`, `green`, 그리고 애매한
-   사진은 `review/no-signal`(신호 없음)·`review/mixed`(파랑+초록)·`review/other`.
-   썸네일을 더블클릭하면 어두운 사진도 자동 보정으로 형태가 보이고,
-   [To Blue]/[To Green] 버튼으로 직접 확정할 수 있습니다. 확정은 기억되어
-   다시 실행해도, 파일 이름이 바뀌어도 유지됩니다. **원본은 절대 수정되지 않습니다.**
-   이미 정리된 결과 폴더(안에 `run.json`이 있는 폴더)는 어디에 있든 다시 세지
-   않으므로, 하위 폴더를 정리한 뒤 상위 폴더를 골라도 사본이 이중으로 잡히지 않습니다.
+## 한국어
 
-배포 묶음 만들기(보내는 사람, 이 폴더에서):
+### 무엇을 하는 프로그램인가요?
 
-    py -3.12 packaging\make_icon.py
-    py -3.12 -m PyInstaller packaging\colorsort.spec --noconfirm
+사진의 **픽셀 색**을 직접 읽어 파랑과 초록으로 나눠 폴더에 정리합니다.
 
-`dist\Colorsort.exe` + `packaging\README_FIRST.txt`(첫 실행 안내) +
-`packaging\USER_GUIDE.txt`(사용 설명서, 영/한) 세 파일을 zip으로 묶어
-USB에 넣으면 끝입니다. 설계·계획 문서: `docs/superpowers/plans/2026-07-21-gui-exe.md`
+- 파일 이름은 판정에 쓰지 않습니다. 이름이 무엇이든 사진의 실제 색만 봅니다.
+- 지원 형식: **PNG · JPG · JPEG · BMP · GIF · WEBP · TIFF** — 하위 폴더까지 모두 찾습니다.
+- 판단이 애매한 사진은 `review`(확인 필요)로 분리해 사람에게 넘깁니다.
+- **원본 사진은 절대 수정되지 않습니다.** 언제나 사본만 만듭니다.
 
-아래는 명령줄(CLI) 버전 사용법입니다. GUI와 같은 판정 로직을 씁니다.
+### 다운로드
 
-## 쓰는 법
+[Releases 페이지](../../releases/latest)에서 **`Colorsort-2.1.0.zip`** 을 받으세요.
+실행 파일(`Colorsort.exe`)과 첫 실행 안내, 사용 설명서(영/한)가 함께 들어 있습니다.
 
-### 1. 명령 프롬프트 열기
+Windows 10/11이면 됩니다. 설치할 것도, 인터넷도 필요 없습니다.
 
-이 파일이 들어있는 폴더(`colorsort` 폴더가 보이는 곳)를 파일 탐색기로 엽니다.
-맨 위 **주소창을 마우스로 클릭**하고 `cmd` 라고 입력한 뒤 Enter 를 누르세요.
-검은 창이 열립니다. 아래 명령을 여기에 입력합니다.
+### 사용 방법
 
-### 2. 처음 한 번만: 필요한 것 설치하기
+> **⚠️ 중요: 사진을 한 장씩 클릭하는 것이 아닙니다.**
+> **사진들이 모여 있는 "폴더"를 선택하면 프로그램이 알아서 작동합니다.**
+> 폴더만 고르면 그 안(하위 폴더 포함)의 모든 사진을 자동으로 찾아 분류합니다.
 
-이 도구는 **파이썬 3.10 이상**이 필요하고, 사진을 읽는 데 쓰는 `pillow` 와 `numpy`
-두 가지를 함께 설치해야 합니다. 아래 명령을 입력하면 한 번에 설치됩니다.
+1. zip 압축을 풀고 `Colorsort.exe`를 더블클릭합니다.
+   - 처음 한 번 "Windows의 PC 보호" 파란 창이 뜨면 **"추가 정보" → "실행"** 을 누르세요.
+   - 첫 실행은 몇 초 걸릴 수 있습니다. 정상입니다.
+2. 언어를 고릅니다 (한국어 / English). 나중에 설정에서 바꿀 수 있습니다.
+3. **"폴더 선택" 버튼을 눌러 사진 모음 폴더를 고르거나, 그 폴더를 창에 끌어다 놓으세요.**
+   바로 분류가 시작됩니다.
+4. 끝나면 카드에 숫자가 뜹니다: 검사 / 파랑 / 초록 / 확인 필요.
+   결과는 고른 폴더 안 `results`에 **사본**으로 저장됩니다.
 
-    py -3 -m pip install pillow numpy
+```
+사진폴더\results\blue                파랑 사진 (사본)
+사진폴더\results\green               초록 사진 (사본)
+사진폴더\results\review\no-signal    거의 새까만 사진
+사진폴더\results\review\mixed        파랑+초록이 함께 있는 사진
+사진폴더\results\review\other        그 밖의 애매한 사진
+사진폴더\results\results.csv         모든 판정과 그 이유 (엑셀에서 열림)
+```
 
-이미 설치돼 있으면 `Requirement already satisfied` 라고 나오고 그대로 끝납니다.
-파이썬이 없거나 3.10보다 낮다면(`py -3 --version` 으로 확인합니다)
-[python.org](https://www.python.org/downloads/) 에서 설치한 뒤 위 명령을 다시 실행하세요.
+### 애매한 사진은 직접 확정
 
-이 준비는 컴퓨터마다 처음 한 번만 하면 됩니다.
+![검사관 화면 — 판정 근거 색칠](docs/screenshots/inspector-ko.png)
 
-### 3. 먼저 미리보기
+- 썸네일을 **더블클릭**하면 크게 열립니다. 어두운 사진도 자동 보정되어 형태가 보입니다.
+- "판정 색칠" 버튼은 프로그램이 어느 픽셀을 파랑/초록으로 셌는지 그대로 보여줍니다.
+- **[파랑으로] / [초록으로]** 버튼으로 직접 확정하면 사본이 그 폴더로 이동합니다.
+- 확정은 사진 내용의 지문으로 기억됩니다 — 다시 분류해도, 파일 이름이 바뀌어도 유지됩니다.
 
-    py -3 -m colorsort . --output results
+### 원본은 안전합니다
 
-명령 끝의 `.` 은 "지금 이 폴더"라는 뜻입니다. 이 폴더와 그 아래 모든 하위 폴더에서
-사진을 찾습니다. 이렇게 나옵니다:
+이 프로그램은 사진을 **복사만** 합니다. 옮기거나, 지우거나, 이름을 바꾸지 않습니다.
+같은 폴더를 다시 분류해도 이전 결과 폴더를 알아보고 건너뛰므로 사본이 이중으로 세어지지 않습니다.
 
-      총 196장을 검사했습니다.
+### 명령줄(CLI) 버전 — 파이썬 사용자용
 
-        blue/            99
-        green/           96
-        review/           1
+GUI와 같은 판정 로직을 쓰는 CLI도 들어 있습니다. 파이썬 3.10 이상이 필요합니다.
 
-무엇이 어디로 갈지 화면에 보여줍니다. **사진은 하나도 건드리지 않습니다.**
-사진이 복사되지도, `blue` 나 `green` 폴더가 만들어지지도 않습니다.
-`results` 폴더가 만들어지고 그 안에 표(`results.csv`)와 기록(`run.json`)만 들어갑니다.
+```
+py -3 -m pip install pillow numpy          # 처음 한 번만
+py -3 -m colorsort 사진폴더 --output results          # 미리보기 (사진은 건드리지 않음)
+py -3 -m colorsort 사진폴더 --output results --apply  # 실제 복사
+```
 
-### 4. 결과가 맞으면 실제로 복사
+`--apply`를 붙였을 때만 사본을 만듭니다. `--lang en`으로 영어 출력, `--lang-reset`으로 언어 선택을 초기화합니다.
 
-    py -3 -m colorsort . --output results --apply
+### 개발자 안내
 
-`--apply` 를 붙였을 때만 복사합니다.
-`results` 폴더 아래에 `blue`, `green`, `review` 세 폴더가 생기고 사진 **사본**이 들어갑니다.
+```
+py -3 -m pytest                                      # 테스트
+py -3.12 packaging\make_icon.py                      # 아이콘 생성
+py -3.12 -m PyInstaller packaging\colorsort.spec --noconfirm   # exe 빌드 → dist\Colorsort.exe
+```
 
-## 원본은 안전합니다
+구조·판정 규칙 다이어그램(한/영 9종)은 [`docs/diagrams`](docs/diagrams)에 있습니다.
 
-**원본 사진은 어떤 경우에도 변경되지 않습니다.**
+---
 
-이 도구는 사진을 복사만 합니다. 옮기거나, 지우거나, 이름을 바꾸지 않습니다.
-미리보기는 원본을 읽기만 하고, `--apply` 를 붙여도 원본은 그대로 둔 채 사본만 만듭니다.
+## English
 
-## 결과 확인
+### What it does
 
-### results.csv
+Sorts photos into **Blue / Green** by reading their **pixel colors** directly.
 
-`results` 폴더 안의 `results.csv` 를 두 번 누르면 엑셀에서 열립니다.
+- File names are ignored — only the actual colors count.
+- Reads **PNG · JPG · JPEG · BMP · GIF · WEBP · TIFF**, subfolders included.
+- Photos it cannot judge go to `review` for your eyes.
+- **Your original photos are NEVER modified.** The app only makes copies.
 
-사진 한 장이 한 줄입니다. 어떻게 판정했는지와 **왜 그렇게 판정했는지**가 함께 적혀
-있습니다. 결과가 이상해 보일 때 어느 사진이 왜 그렇게 됐는지 여기서 확인하세요.
+### Download
 
-### 함께 만들어지는 파일
+Get **`Colorsort-2.1.0.zip`** from the [Releases page](../../releases/latest).
+It contains the executable (`Colorsort.exe`), a first-run note, and the user guide (EN/KO).
 
-`results` 폴더에는 표 말고도 다음 파일이 만들어집니다.
+Windows 10 or 11. Nothing to install, no internet needed.
 
-`run.json` 은 언제 어떤 설정으로 돌렸는지 적어 둔 기록입니다. 나중에 같은 결과를
-다시 얻어야 할 때 씁니다. 평소에는 열어볼 일이 없습니다.
+### How to use
 
-`copy-log.csv` 는 `--apply` 로 복사했을 때만 생기고, **가장 최근 실행이 복사한
-파일**만 적혀 있습니다. 실행할 때마다 새로 쓰이므로 지금까지 복사한 전체 기록이
-아닙니다.
+> **⚠️ Important: you do NOT click photos one by one.**
+> **Select the folder that contains your photos, and the program does the rest.**
+> Pick one folder and every photo inside it (subfolders included) is found and sorted automatically.
 
-### review 폴더
+1. Unzip and double-click `Colorsort.exe`.
+   - If Windows shows "Windows protected your PC" the first time, click **"More info" → "Run anyway"**.
+   - The first launch can take a few seconds. This is normal.
+2. Pick your language (English / 한국어). You can change it later in Settings.
+3. **Click "Choose folder" and select the folder your photos are in — or drag that folder onto the window.**
+   Sorting starts right away.
+4. When done, the cards show the counts: Scanned / Blue / Green / Review.
+   Results are saved as **copies** inside your photo folder, under `results`:
 
-`review` 폴더에는 프로그램이 **확신하지 못한** 사진이 들어갑니다.
+```
+your-folder\results\blue                blue photos (copies)
+your-folder\results\green               green photos (copies)
+your-folder\results\review\no-signal    nearly black photos
+your-folder\results\review\mixed        blue + green in one photo
+your-folder\results\review\other        anything else unclear
+your-folder\results\results.csv         every judgment, with the reason (opens in Excel)
+```
 
-잘못 분류한 것이 아니라, 파랑인지 초록인지 판단할 근거가 부족해서 사람에게 넘긴
-것입니다. 이 폴더의 사진은 직접 눈으로 확인해 주세요. 보통 몇 장 되지 않습니다.
+### Deciding the unclear ones yourself
 
-## 언어
+- **Double-click** any thumbnail to open it big — dark photos open already brightened.
+- The "Judgment" view paints exactly which pixels were counted as blue / green.
+- **[To Blue] / [To Green]** moves that photo's copy to the chosen folder.
+- Decisions are remembered by the photo's content fingerprint — they survive re-sorting and file renames.
 
-처음 실행하면 한국어와 English 중에서 고르는 메뉴가 나옵니다.
-한 번 고르면 저장되고 다시 묻지 않습니다.
+### Your originals are safe
 
-나중에 바꾸려면 명령 뒤에 다음을 붙이세요.
+The app only **copies** photos. It never moves, deletes, or renames your files.
+Re-sorting the same folder never counts the copies twice — previous result folders are recognized and skipped.
 
-    --lang en        이번 실행만 영어로 보기
-    --lang-reset     저장된 선택을 지우고 메뉴를 다시 띄우기
+### Command-line (CLI) version — for Python users
 
-예를 들면 이렇게 씁니다.
+The same judgment logic is available as a CLI. Requires Python 3.10+.
 
-    py -3 -m colorsort . --output results --lang en
+```
+py -3 -m pip install pillow numpy          # once
+py -3 -m colorsort your-folder --output results          # preview (touches nothing)
+py -3 -m colorsort your-folder --output results --apply  # actually copy
+```
 
-언어를 바꿔도 폴더 이름은 `blue`, `green`, `review` 그대로입니다.
-언어에 따라 폴더 이름까지 바뀌면 결과가 두 곳으로 쪼개지기 때문입니다.
+Copies are made only with `--apply`. Use `--lang en` for English output, `--lang-reset` to reset the language choice.
 
-## 이런 경우도 있습니다
+### For developers
 
-### 이미 사진이 들어있는 폴더를 `--output` 으로 지정하면
+```
+py -3 -m pytest                                      # run tests
+py -3.12 packaging\make_icon.py                      # generate the icon
+py -3.12 -m PyInstaller packaging\colorsort.spec --noconfirm   # build → dist\Colorsort.exe
+```
 
-그 안의 사진은 검사 대상에서 빠집니다. 몇 장이 빠졌는지 화면에 알려줍니다.
-
-      출력 폴더 안에 있어 제외한 파일: 196장
-
-한 번 `--apply` 한 뒤 같은 명령을 다시 실행하면 이 알림이 나옵니다.
-`results` 폴더에 만들어 둔 **사본을 원본으로 착각해 다시 세지 않기 위한 것**이므로
-정상입니다.
-
-### `--apply` 를 두 번 실행하면
-
-이미 만들어진 사본은 덮어쓰지 않고 건너뜁니다. 건너뛴 파일은 이렇게 알려줍니다.
-
-      이미 존재하여 건너뜀: results\blue\...
-
-건너뛰었다는 것은 실패가 아니라 이미 되어 있다는 뜻입니다.
-같은 명령을 여러 번 실행해도 안전합니다.
+Architecture and rule diagrams (9 kinds, KO/EN) live in [`docs/diagrams`](docs/diagrams).
