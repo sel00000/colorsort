@@ -13,6 +13,8 @@ Lncap can be distinguished in LNCAP picture, PANC-1 picture color can be quickly
 
 An image with a clear and strong fluorescence intensity can be found in the cell.
 
+It was made with the feedback of the researcher.
+
 <p align="center">
   <img src="docs/screenshots/demo.gif" alt="Colorsort demo — pick a folder, photos get sorted into blue/green, inspect and confirm" width="850"><br>
   <em>One folder in, everything sorted: Scanned / Blue / Green / Review — then inspect and confirm the unclear ones.</em>
