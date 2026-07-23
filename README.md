@@ -157,3 +157,7 @@ To regenerate all 18 diagrams (9 kinds × EN/KO) from the code:
 ```
 python3 docs/diagrams/generate/build_all.py
 ```
+
+## Authors
+
+- Kyung-Bo Kim
